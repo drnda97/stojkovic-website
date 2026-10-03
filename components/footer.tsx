@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { site } from "@/data/site";
+import { getPages } from "@/lib/content";
 
 const columnTitle = "mb-[8px] text-[12px] tracking-[0.2em] text-brass-light uppercase";
 const link = "py-[6px] hover:text-brass-light";
 
-export function Footer() {
+export async function Footer() {
+  // Stranice iz admin panela kojima je uključeno „Prikaži link u podnožju".
+  const pages = (await getPages()).filter((page) => page.showInFooter);
+
   return (
     <footer className="bg-ink text-paper">
       <div className="mx-auto box-content flex max-w-site flex-col gap-[56px] px-[32px] pt-[72px] pb-[32px]">
@@ -28,6 +32,11 @@ export function Footer() {
             <Link href="/cesta-pitanja" className={link}>
               Česta pitanja
             </Link>
+            {pages.map((page) => (
+              <Link key={page.slug} href={`/${page.slug}`} className={link}>
+                {page.title}
+              </Link>
+            ))}
           </div>
           <div className="flex flex-col gap-[4px] text-[15px]">
             <div className={columnTitle}>Kontakt</div>

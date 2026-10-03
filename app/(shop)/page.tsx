@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Placeholder } from "@/components/placeholder";
 import { ProductCard } from "@/components/product-card";
-import { getFeaturedProducts } from "@/data/products";
+import { FEATURED_COLLECTION_ID, getCollectionProducts } from "@/data/products";
+import { getCollections, getPageImages, getProducts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Početna",
@@ -13,7 +14,16 @@ export const metadata: Metadata = {
 const eyebrow = "text-[12px] tracking-[0.2em] text-brass uppercase";
 const textLink = "border-b border-ink px-0 pt-[10px] pb-[4px] text-[15px]";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [products, collections, images] = await Promise.all([
+    getProducts(),
+    getCollections(),
+    getPageImages(),
+  ]);
+  // Izdvojeni sirevi se biraju u admin panelu (kolekcija „Izdvojeni sirevi").
+  const featuredCollection = collections.find((collection) => collection.id === FEATURED_COLLECTION_ID);
+  const featured = featuredCollection ? getCollectionProducts(featuredCollection, products) : [];
+
   return (
     <>
       <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[32px] py-[72px]">
@@ -35,7 +45,7 @@ export default function HomePage() {
         </div>
         <Placeholder
           label="Fotografija · kolut kozjeg sira na drvenoj dasci, prirodno svetlo"
-          src="/slike/pocetna-sir.jpg"
+          src={images["pocetna-sir"]}
           className="aspect-[4/5]"
         />
       </section>
@@ -74,7 +84,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-[24px] gap-y-[48px]">
-          {getFeaturedProducts().map((product) => (
+          {featured.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}
         </div>
@@ -84,7 +94,7 @@ export default function HomePage() {
         <div className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[32px] py-[96px]">
           <Placeholder
             label="Fotografija · koze na ispaši na imanju"
-            src="/slike/koze-na-ispasi.jpg"
+            src={images["koze-na-ispasi"]}
             tone="dark"
             className="aspect-square"
           />

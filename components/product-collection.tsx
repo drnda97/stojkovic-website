@@ -2,27 +2,23 @@
 
 import { useState } from "react";
 import { ProductCard } from "@/components/product-card";
-import { categoryLabels, products, type Category } from "@/data/products";
+import type { Filter, Product } from "@/data/products";
 import { formatProductCount } from "@/lib/format";
 
-type Filter = "svi" | Category;
+const ALL = "svi";
 
-const filters: { value: Filter; label: string }[] = [
-  { value: "svi", label: "Svi" },
-  { value: "klasican", label: categoryLabels.klasican },
-  { value: "sa-ukusima", label: categoryLabels["sa-ukusima"] },
-  { value: "paket", label: categoryLabels.paket },
-];
+type ProductCollectionProps = { products: Product[]; filters: Filter[] };
 
-export function ProductCollection() {
-  const [filter, setFilter] = useState<Filter>("svi");
-  const visible = filter === "svi" ? products : products.filter((p) => p.category === filter);
+export function ProductCollection({ products, filters }: ProductCollectionProps) {
+  const [filter, setFilter] = useState(ALL);
+  const buttons = [{ value: ALL, label: "Svi" }, ...filters.map(({ id, label }) => ({ value: id, label }))];
+  const visible = filter === ALL ? products : products.filter((p) => p.category === filter);
 
   return (
     <>
       <div className="mt-[48px] mb-[40px] flex flex-wrap items-center justify-between gap-[16px] border-b border-line pb-[24px]">
         <div className="flex flex-wrap gap-[10px]">
-          {filters.map(({ value, label }) => {
+          {buttons.map(({ value, label }) => {
             const active = filter === value;
             return (
               <button

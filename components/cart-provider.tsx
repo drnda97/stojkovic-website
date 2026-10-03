@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import type { Product } from "@/data/products";
 import { countPieces, toLines, type CartLine } from "@/lib/cart";
 import {
   addItem,
@@ -39,7 +40,13 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const noopSubscribe = () => () => {};
 
-export function CartProvider({ children }: { children: ReactNode }) {
+type CartProviderProps = {
+  /** Proizvodi sa servera — korpa iz njih čita nazive, cene i slike. */
+  products: Product[];
+  children: ReactNode;
+};
+
+export function CartProvider({ products, children }: CartProviderProps) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const hydrated = useSyncExternalStore(
     noopSubscribe,
@@ -56,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<CartContextValue>(() => {
-    const lines = toLines(items);
+    const lines = toLines(items, products);
     return {
       lines,
       count: countPieces(lines),
@@ -69,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove: removeItem,
       clear: clearItems,
     };
-  }, [items, hydrated, isOpen, openCart, closeCart, add]);
+  }, [items, products, hydrated, isOpen, openCart, closeCart, add]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

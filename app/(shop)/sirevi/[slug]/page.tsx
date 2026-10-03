@@ -5,35 +5,43 @@ import { AccordionItem } from "@/components/accordion";
 import { AddToCart } from "@/components/add-to-cart";
 import { Placeholder } from "@/components/placeholder";
 import { ProductCard } from "@/components/product-card";
-import {
-  galleryThumbs,
-  getProduct,
-  getRelatedProducts,
-  hasWeight,
-  products,
-} from "@/data/products";
+import type { PageImageId } from "@/data/page-images";
+import { getRelatedProducts, hasWeight } from "@/data/products";
 import { site } from "@/data/site";
+import { getFilters, getPageImages, getProduct, getProducts } from "@/lib/content";
 import { formatPrice, formatWeight } from "@/lib/format";
 
 type ProductPageProps = { params: Promise<{ slug: string }> };
 
-export const dynamicParams = false;
+/** Male fotografije u galeriji: iste su za sve proizvode, menjaju se u admin panelu. */
+const galleryThumbs: { label: string; slot: PageImageId }[] = [
+  { label: "Odozgo", slot: "galerija-odozgo" },
+  { label: "Pakovanje", slot: "galerija-pakovanje" },
+  { label: "Na tanjiru", slot: "galerija-na-tanjiru" },
+];
 
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+// Proizvodi dodati iz admin panela posle builda prave se pri prvoj poseti.
+export async function generateStaticParams() {
+  return (await getProducts()).map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProduct(slug);
   if (!product) return {};
   return { title: product.fullName, description: product.intro };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const [products, filters, images] = await Promise.all([
+    getProducts(),
+    getFilters(),
+    getPageImages(),
+  ]);
+  const product = products.find((candidate) => candidate.slug === slug);
   if (!product) notFound();
+  const eyebrow = filters.find((filter) => filter.id === product.category)?.eyebrow ?? product.eyebrow;
 
   return (
     <>
@@ -58,7 +66,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 key={thumb.label}
                 label={thumb.label}
                 variant="thumb"
-                src={thumb.image}
+                src={images[thumb.slot]}
                 sizes="(min-width: 900px) 17vw, 33vw"
                 className="aspect-square"
               />
@@ -69,7 +77,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="flex flex-col gap-[24px]">
           <div className="flex flex-col gap-[10px]">
             <div className="text-[12px] tracking-[0.2em] text-brass uppercase">
-              {product.eyebrow}
+              {eyebrow}
             </div>
             <h1 className="text-[length:clamp(40px,4.5vw,60px)] leading-[1.05] text-balance">
               {product.fullName}
@@ -136,7 +144,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           Probajte i ove
         </h2>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-x-[24px] gap-y-[48px]">
-          {getRelatedProducts(product.slug).map((related) => (
+          {getRelatedProducts(products, product.slug).map((related) => (
             <ProductCard key={related.slug} product={related} showTagline={false} />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { getProduct, type Product } from "@/data/products";
+import type { Product } from "@/data/products";
 import { site } from "@/data/site";
 
 export type CartItem = { slug: string; qty: number };
@@ -11,9 +11,9 @@ export function clampQty(qty: number): number {
 }
 
 /** Spaja stavke korpe sa proizvodima; stavke čiji proizvod više ne postoji se preskaču. */
-export function toLines(items: CartItem[]): CartLine[] {
+export function toLines(items: CartItem[], products: Product[]): CartLine[] {
   return items.flatMap((item) => {
-    const product = getProduct(item.slug);
+    const product = products.find((candidate) => candidate.slug === item.slug);
     return product ? [{ product, qty: item.qty }] : [];
   });
 }

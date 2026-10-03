@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProductCollection } from "@/components/product-collection";
+import { getFilters, getProducts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Sirevi",
@@ -7,7 +8,9 @@ export const metadata: Metadata = {
     "Svi kozji sirevi Gazdinstva Stojković: klasičan, sa alevom paprikom, maslinama, začinskim biljem, biberom i degustacioni paket. Ručna proizvodnja, šalju se vakuumirani.",
 };
 
-export default function CollectionPage() {
+export default async function CollectionPage() {
+  const [products, filters] = await Promise.all([getProducts(), getFilters()]);
+
   return (
     <section className="mx-auto box-content max-w-site px-[32px] pt-[72px] pb-[96px]">
       <div className="flex max-w-[640px] flex-col gap-[14px]">
@@ -19,7 +22,7 @@ export default function CollectionPage() {
         </p>
       </div>
 
-      <ProductCollection />
+      <ProductCollection products={products} filters={filters} />
     </section>
   );
 }

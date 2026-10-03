@@ -11,14 +11,14 @@ const links = [
   { href: "/cesta-pitanja", label: "Česta pitanja" },
 ];
 
-export function Header() {
+export function Header({ logo }: { logo?: string }) {
   const pathname = usePathname();
   const { count, openCart } = useCart();
 
   return (
     <header className="border-b border-line">
       <div className="mx-auto box-content flex max-w-site flex-wrap items-center justify-between gap-x-[32px] gap-y-[16px] px-[32px] py-[20px]">
-        <Wordmark />
+        <Wordmark logo={logo} />
         <nav className="flex flex-wrap gap-x-[36px] gap-y-[8px] text-[15px] tracking-[0.04em]">
           {links.map((link) => {
             const active = pathname === link.href;

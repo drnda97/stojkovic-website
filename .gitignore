@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sadržaj iz admin panela (proizvodi i ubačene slike)
+/storage/

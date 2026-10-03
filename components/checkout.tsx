@@ -176,19 +176,20 @@ export function Checkout() {
             </div>
             <div className="flex flex-col gap-[6px]">
               <label htmlFor="mejl" className={labelClass}>
-                Email (nije obavezno)
+                Email
               </label>
               <input
                 {...field("email")}
                 type="email"
                 autoComplete="email"
+                required
                 onChange={(event) => update("email", event.target.value)}
               />
               {errorText("email")}
             </div>
           </div>
           <p className={hintClass}>
-            Na ovaj broj vas zovemo da potvrdimo porudžbinu, a kurir da najavi dostavu.
+            Na ovaj broj vas zovemo da potvrdimo porudžbinu, a kurir da najavi dostavu. Na email stiže potvrda porudžbine.
           </p>
         </div>
 

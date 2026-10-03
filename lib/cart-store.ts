@@ -1,4 +1,3 @@
-import { getProduct } from "@/data/products";
 import { clampQty, type CartItem } from "@/lib/cart";
 
 /**
@@ -23,7 +22,7 @@ function read(): CartItem[] {
       if (typeof entry !== "object" || entry === null) return [];
       const { slug, qty } = entry as Record<string, unknown>;
       if (typeof slug !== "string" || typeof qty !== "number" || !Number.isFinite(qty)) return [];
-      return getProduct(slug) ? [{ slug, qty: clampQty(qty) }] : [];
+      return [{ slug, qty: clampQty(qty) }];
     });
     return valid.length > 0 ? valid : EMPTY;
   } catch {
@@ -78,9 +77,7 @@ export function addItem(slug: string, qty: number) {
   const existing = current.find((item) => item.slug === slug);
   if (existing) {
     write(
-      current.map((item) =>
-        item.slug === slug ? { slug, qty: clampQty(item.qty + qty) } : item,
-      ),
+      current.map((item) => (item.slug === slug ? { slug, qty: clampQty(item.qty + qty) } : item)),
     );
   } else {
     write([...current, { slug, qty: clampQty(qty) }]);
@@ -88,9 +85,7 @@ export function addItem(slug: string, qty: number) {
 }
 
 export function setItemQty(slug: string, qty: number) {
-  write(
-    getSnapshot().map((item) => (item.slug === slug ? { slug, qty: clampQty(qty) } : item)),
-  );
+  write(getSnapshot().map((item) => (item.slug === slug ? { slug, qty: clampQty(qty) } : item)));
 }
 
 export function removeItem(slug: string) {

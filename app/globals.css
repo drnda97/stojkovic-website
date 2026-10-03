@@ -83,3 +83,11 @@
     }
   }
 }
+
+/* Admin panel: naslovi u istom fontu kao ostatak panela, ne u serifu prodavnice. */
+.admin h1,
+.admin h2,
+.admin h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+}

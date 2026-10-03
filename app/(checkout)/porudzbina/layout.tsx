@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Wordmark } from "@/components/wordmark";
 import { site } from "@/data/site";
+import { getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Porudžbina",
@@ -10,12 +11,14 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default function CheckoutLayout({ children }: { children: ReactNode }) {
+export default async function CheckoutLayout({ children }: { children: ReactNode }) {
+  const { logo } = await getSettings();
+
   return (
     <div className="leading-[1.6]">
       <header className="border-b border-line">
         <div className="mx-auto box-content flex max-w-site flex-wrap items-center justify-between gap-x-[32px] gap-y-[16px] px-[32px] py-[20px]">
-          <Wordmark />
+          <Wordmark logo={logo} />
           <Link href="/sirevi" className="border-b border-ink py-[10px] text-[15px]">
             Nazad u prodavnicu
           </Link>

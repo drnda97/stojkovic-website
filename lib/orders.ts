@@ -1,4 +1,4 @@
-import { getDelivery, getSubtotal, MAX_QTY, toLines, type CartItem } from "@/lib/cart";
+import { MAX_QTY, type CartItem } from "@/lib/cart";
 
 export type OrderCustomer = {
   name: string;
@@ -22,6 +22,28 @@ export type OrderResult =
   | { ok: true; orderNumber: string | null; total: number | null }
   | { ok: false; errors: OrderErrors; message?: string };
 
+export type OrderStatus = "nova" | "poslata" | "otkazana";
+
+export const orderStatusLabels: Record<OrderStatus, string> = {
+  nova: "Nova",
+  poslata: "Poslata",
+  otkazana: "Otkazana",
+};
+
+/** Sačuvana porudžbina. Naziv i cena stavke su prepis iz trenutka poručivanja. */
+export type Order = {
+  number: string;
+  receivedAt: string;
+  status: OrderStatus;
+  customer: OrderCustomer;
+  items: { slug: string; name: string; qty: number; price: number | null }[];
+  subtotal: number | null;
+  delivery: number | null;
+  total: number | null;
+  /** Zašto email o porudžbini nije poslat; nema ga kada je sve prošlo. */
+  emailError?: string;
+};
+
 export const emptyCustomer: OrderCustomer = {
   name: "",
   phone: "",
@@ -32,7 +54,7 @@ export const emptyCustomer: OrderCustomer = {
   note: "",
 };
 
-/** Ista pravila važe u formi (pregledač) i u submitOrder (server). */
+/** Ista pravila važe u formi (pregledač) i u submitOrder (server, lib/order-store.ts). */
 export function validateCustomer(customer: OrderCustomer): OrderErrors {
   const errors: OrderErrors = {};
 
@@ -43,13 +65,19 @@ export function validateCustomer(customer: OrderCustomer): OrderErrors {
   const phoneDigits = customer.phone.replace(/\D/g, "");
   if (customer.phone.trim() === "") {
     errors.phone = "Upišite broj telefona.";
-  } else if (!/^[+\d\s/().-]+$/.test(customer.phone.trim()) || phoneDigits.length < 8 || phoneDigits.length > 15) {
+  } else if (
+    !/^[+\d\s/().-]+$/.test(customer.phone.trim()) ||
+    phoneDigits.length < 8 ||
+    phoneDigits.length > 15
+  ) {
     errors.phone = "Proverite broj telefona, npr. 06x xxx xxxx.";
   }
 
   const email = customer.email.trim();
-  if (email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.email = "Proverite email adresu ili ostavite polje prazno.";
+  if (email === "") {
+    errors.email = "Upišite email adresu.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = "Proverite email adresu, npr. ime@primer.rs.";
   }
 
   if (customer.street.trim().length < 3) {
@@ -78,7 +106,7 @@ function asText(value: unknown): string {
 }
 
 /** Podaci stižu iz pregledača, pa im se ne veruje: sve se čita i proverava iznova. */
-function parseOrder(input: unknown): OrderInput {
+export function parseOrder(input: unknown): OrderInput {
   const raw = (typeof input === "object" && input !== null ? input : {}) as Record<string, unknown>;
   const rawCustomer = (
     typeof raw.customer === "object" && raw.customer !== null ? raw.customer : {}
@@ -103,54 +131,4 @@ function parseOrder(input: unknown): OrderInput {
   });
 
   return { customer, items };
-}
-
-/**
- * Jedino mesto kroz koje prolazi porudžbina.
- *
- * Za sada: proverava podatke na serveru i upisuje porudžbinu u log servera.
- * Nije odlučeno gde vlasniku stižu porudžbine (email, SMS ili admin panel),
- * pa ovde namerno nema baze, servisa za email ni autentifikacije.
- */
-export async function submitOrder(input: unknown): Promise<OrderResult> {
-  const { customer, items } = parseOrder(input);
-
-  const errors = validateCustomer(customer);
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, errors };
-  }
-
-  // Cene se uzimaju iz data/products.ts, nikad iz onoga što pošalje pregledač.
-  const lines = toLines(items);
-  if (lines.length === 0) {
-    return { ok: false, errors: {}, message: "Korpa je prazna. Dodajte sireve pa pokušajte ponovo." };
-  }
-
-  const subtotal = getSubtotal(lines);
-  const delivery = getDelivery(subtotal);
-  const total = subtotal === null || delivery === null ? null : subtotal + delivery;
-
-  const order = {
-    receivedAt: new Date().toISOString(),
-    customer,
-    items: lines.map((line) => ({
-      slug: line.product.slug,
-      name: line.product.fullName,
-      qty: line.qty,
-      price: line.product.price,
-    })),
-    subtotal,
-    delivery,
-    total,
-    payment: "pouzećem",
-  };
-
-  // OVDE SE KASNIJE PRIKLJUČUJE PRAVO SLANJE PORUDŽBINE
-  // (email vlasniku, SMS ili upis u bazu za admin panel). Kada se to dogovori,
-  // zameni console.info ispod pozivom tog servisa i vrati pravi broj porudžbine
-  // u `orderNumber` — ekran „Hvala" ga tada prikazuje umesto „[BROJ]".
-  // Dok se to ne uradi, porudžbina postoji SAMO u logu servera.
-  console.info("[porudžbina]", JSON.stringify(order, null, 2));
-
-  return { ok: true, orderNumber: null, total };
 }

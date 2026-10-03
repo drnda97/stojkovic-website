@@ -1,12 +1,11 @@
 /**
- * Svi proizvodi na jednom mestu.
+ * Početni proizvodi. Važe dok se iz admin panela ne sačuva prva izmena; od
+ * tada se proizvodi čitaju iz storage/content.json (vidi lib/content.ts).
  *
  * Cena (`price`, u RSD) i gramaža (`weight`, u gramima) su `null` dok ih vlasnik
  * ne dostavi; sajt tada prikazuje „[CENA] RSD" i „[GRAMAŽA] g". Kada se upišu
  * brojevi, cene, međuzbir i ukupan iznos se računaju sami.
  */
-
-export type Category = "klasican" | "sa-ukusima" | "paket";
 
 export type Product = {
   slug: string;
@@ -14,20 +13,23 @@ export type Product = {
   name: string;
   /** Pun naziv: naslov stranice proizvoda, korpa, porudžbina. */
   fullName: string;
-  category: Category;
+  /** Id filtera (vidi `defaultFilters`); po njemu se proizvod filtrira na strani „Sirevi". */
+  category: string;
   /** Natpis iznad naslova na stranici proizvoda. */
   eyebrow: string;
   /** Kratak opis na kartici. */
   tagline: string;
-  /** Gramaža u gramima. Paket nema gramažu. */
+  /** Gramaža u gramima. */
   weight: number | null;
+  /** Prodaje se bez gramaže (npr. paket). Bez ovog polja važi staro pravilo: paketi je nemaju. */
+  noWeight?: boolean;
   /** Cena u RSD. */
   price: number | null;
   /** Šta je na fotografiji — natpis u okviru koji čeka sliku. */
   photo: string;
   /** Natpis glavne fotografije na stranici proizvoda. */
   photoMain: string;
-  /** Putanja do slike u /public. Trenutno su to privremene fotografije sa Unsplash-a. */
+  /** Putanja do slike: iz /public/slike ili ubačena iz admin panela (/media/…). */
   image?: string;
   /** Uvodni pasus na stranici proizvoda. */
   intro: string;
@@ -39,11 +41,21 @@ export type Product = {
   serving: { title: string; text: string }[];
 };
 
-export const categoryLabels: Record<Category, string> = {
-  klasican: "Klasičan",
-  "sa-ukusima": "Sa ukusima",
-  paket: "Paketi",
-};
+/** Dugme filtera na strani „Sirevi". `eyebrow` je natpis iznad naslova proizvoda iz tog filtera. */
+export type Filter = { id: string; label: string; eyebrow: string };
+
+/** Početni filteri; menjaju se u admin panelu. */
+export const defaultFilters: Filter[] = [
+  { id: "klasican", label: "Klasičan", eyebrow: "Kozji sir" },
+  { id: "sa-ukusima", label: "Sa ukusima", eyebrow: "Kozji sir sa ukusom" },
+  { id: "paket", label: "Paketi", eyebrow: "Paket" },
+];
+
+/** Ručno složena grupa proizvoda sa svojom stranicom (/kolekcije/…). */
+export type Collection = { id: string; name: string; description: string; productSlugs: string[] };
+
+/** Kolekcija koja puni „Izdvojene sireve" na početnoj; ne može da se obriše. */
+export const FEATURED_COLLECTION_ID = "izdvojeni";
 
 export const products: Product[] = [
   {
@@ -240,34 +252,23 @@ export const products: Product[] = [
   },
 ];
 
-/**
- * Male fotografije u galeriji na stranici proizvoda. Privremene su i iste za
- * sve proizvode, dok ne stignu prave fotografije svakog sira.
- */
-export const galleryThumbs = [
-  { label: "Odozgo", image: "/slike/galerija-odozgo.jpg" },
-  { label: "Pakovanje", image: "/slike/galerija-pakovanje.jpg" },
-  { label: "Na tanjiru", image: "/slike/galerija-na-tanjiru.jpg" },
-];
-
-export function getProduct(slug: string): Product | undefined {
-  return products.find((product) => product.slug === slug);
-}
-
 /** Paket se ne prodaje na gramažu, pa se kod njega gramaža ne prikazuje. */
 export function hasWeight(product: Product): boolean {
-  return product.category !== "paket";
+  return !(product.noWeight ?? product.category === "paket");
 }
 
-/** Izdvojeni sirevi na početnoj: prva četiri sira iz liste. */
-export function getFeaturedProducts(): Product[] {
-  return products.slice(0, 4);
+/** Proizvodi kolekcije, redom kojim su u njoj; obrisani proizvodi se preskaču. */
+export function getCollectionProducts(collection: Collection, products: Product[]): Product[] {
+  return collection.productSlugs.flatMap((slug) => {
+    const product = products.find((candidate) => candidate.slug === slug);
+    return product ? [product] : [];
+  });
 }
 
 /** „Probajte i ove": prva tri druga sira i paket (ili četiri sira, ako je otvoren paket). */
-export function getRelatedProducts(slug: string): Product[] {
+export function getRelatedProducts(products: Product[], slug: string): Product[] {
   const others = products.filter((product) => product.slug !== slug);
-  const cheeses = others.filter((product) => product.category !== "paket");
-  const packs = others.filter((product) => product.category === "paket");
+  const cheeses = others.filter((product) => hasWeight(product));
+  const packs = others.filter((product) => !hasWeight(product));
   return [...cheeses.slice(0, 4 - Math.min(packs.length, 1)), ...packs.slice(0, 1)];
 }

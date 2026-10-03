@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Placeholder } from "@/components/placeholder";
 import { site } from "@/data/site";
+import { getPageImages } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "O nama",
@@ -45,7 +46,9 @@ const steps = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const images = await getPageImages();
+
   return (
     <>
       <section className="mx-auto box-content flex max-w-site flex-col gap-[20px] px-[32px] pt-[88px] pb-[64px]">
@@ -58,7 +61,7 @@ export default function AboutPage() {
       <div className="mx-auto box-content max-w-site px-[32px]">
         <Placeholder
           label="Fotografija · imanje i stado, široki kadar"
-          src="/slike/imanje-i-stado.jpg"
+          src={images["imanje-i-stado"]}
           sizes="(min-width: 1264px) 1200px, 100vw"
           className="aspect-[21/9]"
         />
@@ -111,7 +114,7 @@ export default function AboutPage() {
       <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-start gap-[64px] px-[32px] py-[96px]">
         <Placeholder
           label="Fotografija · ruke koje oblikuju sir u sirani"
-          src="/slike/ruke-u-sirani.jpg"
+          src={images["ruke-u-sirani"]}
           className="aspect-[4/5]"
         />
         <div className="flex flex-col gap-[32px]">
