@@ -1,0 +1,5 @@
+# Netlify pre objave traži vrednosti tajnih promenljivih po kodu i rezultatu builda.
+# Turbopack ih upisuje u svoj keš builda (.next/cache), koji se ne objavljuje na sajtu,
+# pa se taj folder izuzima iz provere. Sve ostalo se i dalje proverava.
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache/**,.next/cache/**,.netlify/.next/cache,.next/cache"
