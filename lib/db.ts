@@ -266,6 +266,20 @@ export async function insertProducts(connection: PoolConnection, products: typeo
   );
 }
 
+/**
+ * Sertifikat iz promenljive okruženja često stigne bez preloma redova (paneli hostinga ih
+ * pretvore u razmake ili u tekst "\\n"). Ovde se vraća u ispravan PEM oblik: zaglavlje,
+ * sadržaj u redovima od 64 znaka, podnožje.
+ */
+function normalizePem(value: string): string {
+  const body = value
+    .replace(/-----(BEGIN|END) CERTIFICATE-----/g, "")
+    .replace(/\\n/g, "")
+    .replace(/\s+/g, "");
+  const lines = body.match(/.{1,64}/g) ?? [];
+  return `-----BEGIN CERTIFICATE-----\n${lines.join("\n")}\n-----END CERTIFICATE-----\n`;
+}
+
 // Na globalThis, da razvojni server pri svakoj izmeni koda ne otvara novi skup veza.
 const globalForDb = globalThis as unknown as { stojkovicDb?: Promise<Pool> };
 
@@ -287,7 +301,7 @@ export function getDb(): Promise<Pool> {
       charset: "utf8mb4",
       // Baze u oblaku traže šifrovanu vezu. DB_SSL_CA je sertifikat provajdera (ceo PEM tekst);
       // DB_SSL=true je dovoljno kada provajder koristi javno priznat sertifikat.
-      ssl: DB_SSL_CA ? { ca: DB_SSL_CA.replace(/\\n/g, "\n") } : DB_SSL === "true" ? {} : undefined,
+      ssl: DB_SSL_CA ? { ca: normalizePem(DB_SSL_CA) } : DB_SSL === "true" ? {} : undefined,
       // Vreme se čuva i čita kao UTC, nezavisno od podešavanja servera.
       timezone: "Z",
       connectionLimit: 5,
