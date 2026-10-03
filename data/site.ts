@@ -29,8 +29,10 @@ export const site = {
   /** Kada se javljate kupcu posle porudžbine, npr. "24 sata" — ekran „Hvala". */
   callbackTime: "[ROK ZA POZIV]",
 
-  /** Cena dostave u RSD. Dok je null, prikazuje se „[CENA DOSTAVE] RSD". */
-  deliveryPrice: null as number | null,
-  /** Iznos porudžbine u RSD preko kog je dostava besplatna. Dok je null, prikazuje se „[IZNOS] RSD". */
-  freeDeliveryFrom: null as number | null,
+  /**
+   * Cena dostave u RSD. Dok je null, prikazuje se „[CENA DOSTAVE] RSD".
+   * 450 je PROBNA vrednost, za testiranje korpe i poručivanja.
+   * Besplatna dostava za veće porudžbine podešava se u admin panelu.
+   */
+  deliveryPrice: 450 as number | null,
 };

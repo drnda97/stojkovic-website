@@ -7,6 +7,7 @@ import {
   resetTemplateAction,
   saveAppearanceAction,
   saveMailAction,
+  saveShippingAction,
   sendTestEmailAction,
   uploadTemplateAction,
 } from "../actions";
@@ -37,7 +38,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   await requireAdmin();
   const { greska, ok } = await searchParams;
   // Lozinka za SMTP se namerno ne šalje u formu.
-  const { colors, headingFont, bodyFont, logo, favicon, mail } = await getSettings();
+  const { colors, headingFont, bodyFont, logo, favicon, mail, shipping } = await getSettings();
   const previewPath = `${ADMIN_PATH}/podesavanja/pregled`;
 
   return (
@@ -139,6 +140,38 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <button type="submit" className={quietButtonClass}>
             Vrati boje i fontove iz dizajna
           </button>
+        </form>
+      </section>
+
+      <section className={`${cardClass} mt-[16px] max-w-[760px]`}>
+        <h2 className={sectionTitle}>Besplatna dostava</h2>
+        <p className={sectionHint}>
+          Kada je uključena, kupac u korpi vidi traku koja pokazuje koliko mu još fali do besplatne
+          dostave, a dostava se ne naplaćuje od upisanog iznosa naviše. Gleda se vrednost proizvoda,
+          posle popusta.
+        </p>
+        <form action={saveShippingAction} className="flex flex-col gap-[16px]">
+          <label className={checkboxLabel}>
+            <Checkbox name="freeEnabled" defaultChecked={shipping.freeEnabled} />
+            Besplatna dostava za veće porudžbine
+          </label>
+          <label className={`${labelClass} max-w-[260px]`}>
+            Besplatna od iznosa (RSD)
+            <input
+              name="freeFrom"
+              type="number"
+              min="1"
+              step="1"
+              required
+              defaultValue={shipping.freeFrom}
+              className={inputClass}
+            />
+          </label>
+          <div>
+            <button type="submit" className={buttonClass}>
+              Sačuvaj dostavu
+            </button>
+          </div>
         </form>
       </section>
 

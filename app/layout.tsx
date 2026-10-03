@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { CartProvider } from "@/components/cart-provider";
 import { themeCss } from "@/data/settings";
-import { getProducts, getSettings } from "@/lib/content";
+import { getFreeShippingFrom, getProducts, getSettings } from "@/lib/content";
 import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
+
+// Sadržaj je u bazi i menja se iz admin panela, pa se stranice prave pri svakoj poseti:
+// izmena se vidi odmah, a build ne zavisi od toga da li je baza dostupna.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { favicon } = await getSettings();
@@ -21,7 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [products, settings] = await Promise.all([getProducts(), getSettings()]);
+  const [products, settings, freeShippingFrom] = await Promise.all([
+    getProducts(),
+    getSettings(),
+    getFreeShippingFrom(),
+  ]);
   // Boje i fontovi izabrani u admin panelu; prazno dok je sve po dizajnu.
   const theme = themeCss(settings);
 
@@ -29,7 +37,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="sr-Latn" className={fontVariables}>
       <body>
         {theme && <style dangerouslySetInnerHTML={{ __html: theme }} />}
-        <CartProvider products={products}>{children}</CartProvider>
+        <CartProvider products={products} freeShippingFrom={freeShippingFrom}>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

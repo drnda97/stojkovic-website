@@ -1,6 +1,6 @@
 /**
  * Opšta podešavanja sajta koja se menjaju u admin panelu: izgled i email.
- * Ovde su tipovi i početne vrednosti; sačuvane vrednosti su u storage/content.json.
+ * Ovde su tipovi i početne vrednosti; sačuvane vrednosti su u bazi.
  */
 
 export type ThemeColors = {
@@ -95,6 +95,13 @@ export type MailSettings = {
   customTemplate: boolean;
 };
 
+export type ShippingSettings = {
+  /** Besplatna dostava za veće porudžbine; dok je isključeno, dostava se uvek naplaćuje. */
+  freeEnabled: boolean;
+  /** Vrednost proizvoda u RSD (posle popusta) od koje je dostava besplatna. */
+  freeFrom: number;
+};
+
 export type Settings = {
   colors: ThemeColors;
   headingFont: FontId;
@@ -102,6 +109,7 @@ export type Settings = {
   /** Putanje do ubačenih slika; bez njih važe natpis „Stojković" i public/icon.svg. */
   logo?: string;
   favicon?: string;
+  shipping: ShippingSettings;
   mail: MailSettings;
 };
 
@@ -109,6 +117,7 @@ export const defaultSettings: Settings = {
   colors: defaultColors,
   headingFont: "cormorant",
   bodyFont: "jost",
+  shipping: { freeEnabled: false, freeFrom: 6000 },
   mail: {
     notifySeller: true,
     notifyCustomer: true,

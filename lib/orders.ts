@@ -1,3 +1,4 @@
+import { normalizeCode } from "@/data/discounts";
 import { MAX_QTY, type CartItem } from "@/lib/cart";
 
 export type OrderCustomer = {
@@ -13,6 +14,8 @@ export type OrderCustomer = {
 export type OrderInput = {
   customer: OrderCustomer;
   items: CartItem[];
+  /** Kod za popust koji je kupac upisao; prazan ako ga nema. */
+  discountCode: string;
 };
 
 export type CustomerField = keyof OrderCustomer;
@@ -40,6 +43,10 @@ export type Order = {
   subtotal: number | null;
   delivery: number | null;
   total: number | null;
+  /** Popust iskorišćen u ovoj porudžbini; `amount` je u RSD. */
+  discount?: { code: string; percent: number; amount: number };
+  /** Kod poslat kupcu uz ovu porudžbinu, za sledeću kupovinu. */
+  issuedCode?: { code: string; percent: number; title: string };
   /** Zašto email o porudžbini nije poslat; nema ga kada je sve prošlo. */
   emailError?: string;
 };
@@ -130,5 +137,5 @@ export function parseOrder(input: unknown): OrderInput {
     return [{ slug, qty }];
   });
 
-  return { customer, items };
+  return { customer, items, discountCode: normalizeCode(asText(raw.discountCode)) };
 }

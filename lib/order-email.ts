@@ -1,9 +1,8 @@
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import nodemailer from "nodemailer";
 import type { Settings } from "@/data/settings";
 import { site } from "@/data/site";
-import { getSettings, STORAGE_DIR, uploadPath } from "@/lib/content";
+import { getSettings, getStoredValue, setStoredValue, uploadPath } from "@/lib/content";
 import { defaultEmailTemplate } from "@/lib/email-template";
 import { formatPrice } from "@/lib/format";
 import type { Order } from "@/lib/orders";
@@ -15,23 +14,23 @@ import type { Order } from "@/lib/orders";
 
 export type Recipient = "seller" | "customer";
 
-const TEMPLATE_FILE = path.join(STORAGE_DIR, "email-template.html");
+/** Ime zapisa u tabeli settings pod kojim je šablon koji je vlasnik ubacio. */
+const TEMPLATE_KEY = "email_template";
 export const MAX_TEMPLATE_BYTES = 300 * 1024;
 const LOGO_CID = "logo@stojkovic";
 
 export async function saveCustomTemplate(html: string) {
-  await mkdir(STORAGE_DIR, { recursive: true });
-  await writeFile(TEMPLATE_FILE, html, "utf8");
+  await setStoredValue(TEMPLATE_KEY, html);
 }
 
 export async function removeCustomTemplate() {
-  await unlink(TEMPLATE_FILE).catch(() => {});
+  await setStoredValue(TEMPLATE_KEY, null);
 }
 
 /** Šablon koji je vlasnik ubacio, ili naš ako svog nema. */
 export async function getEmailTemplate(settings: Settings): Promise<string> {
   if (!settings.mail.customTemplate) return defaultEmailTemplate;
-  return readFile(TEMPLATE_FILE, "utf8").catch(() => defaultEmailTemplate);
+  return (await getStoredValue(TEMPLATE_KEY)) ?? defaultEmailTemplate;
 }
 
 function escapeHtml(value: string): string {
@@ -82,7 +81,20 @@ export function renderOrderEmail({ template, order, recipient, settings, logoSrc
     .join(" · ");
   const address = `${customer.street}, ${customer.postalCode} ${customer.city}`;
 
-  // Sve što dolazi od kupca prolazi kroz escapeHtml; gotov HTML su samo {{stavke}} i {{logo}}.
+  // Kod za sledeću kupovinu: kupcu istaknut okvir, prodavcu samo napomena da je poslat.
+  const { colors } = settings;
+  const issued = order.issuedCode;
+  let discountBlock = "";
+  if (issued && recipient === "customer") {
+    discountBlock = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border:2px dashed ${colors.brass};"><tr><td align="center" style="padding:18px 20px;font-size:15px;color:${colors.ink};"><div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:${colors.brass};">Poklon za sledeću kupovinu</div><div style="padding:6px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;">${escapeHtml(issued.title)}</div><div style="padding:2px 0;font-size:17px;">${issued.percent}% popusta</div><div style="padding:6px 0;"><span style="display:inline-block;padding:8px 16px;background:${colors.ink};color:${colors.paper};font-family:'Courier New',monospace;font-size:20px;letter-spacing:3px;">${escapeHtml(issued.code)}</span></div><div>Upišite kod u korpi pri sledećoj porudžbini. Važi za jednu kupovinu, uz isti email ili telefon.</div></td></tr></table>`;
+  } else if (issued) {
+    discountBlock = `<p style="margin:16px 0 0;font-size:15px;">Kupcu je uz potvrdu poslat kod <strong>${escapeHtml(issued.code)}</strong> za ${issued.percent}% popusta pri sledećoj kupovini.</p>`;
+  }
+  const discountRow = order.discount
+    ? `<tr><td style="padding:2px 0;">Popust ${order.discount.percent}% (kod ${escapeHtml(order.discount.code)})</td><td align="right" style="padding:2px 0;white-space:nowrap;">−${amount(order.discount.amount)}</td></tr>`
+    : "";
+
+  // Sve što dolazi od kupca prolazi kroz escapeHtml; gotov HTML su {{stavke}}, {{logo}}, {{popust}} i {{red_popusta}}.
   const values: Record<string, string> = {
     naslov: escapeHtml(title),
     poruka: escapeHtml(message),
@@ -99,6 +111,11 @@ export function renderOrderEmail({ template, order, recipient, settings, logoSrc
       )
       .join("\n"),
     medjuzbir: amount(order.subtotal),
+    red_popusta: discountRow,
+    popust: discountBlock,
+    naslov_popusta: escapeHtml(issued?.title ?? ""),
+    kod_popusta: escapeHtml(issued?.code ?? ""),
+    procenat_popusta: issued ? String(issued.percent) : "",
     dostava: amount(order.delivery),
     ukupno: amount(order.total),
     ime: escapeHtml(customer.name),
@@ -129,8 +146,21 @@ export function renderOrderEmail({ template, order, recipient, settings, logoSrc
         `${item.qty} × ${item.name} — ${amount(item.price === null ? null : item.price * item.qty)}`,
     ),
     `Međuzbir: ${amount(order.subtotal)}`,
+    ...(order.discount
+      ? [
+          `Popust ${order.discount.percent}% (kod ${order.discount.code}): −${amount(order.discount.amount)}`,
+        ]
+      : []),
     `Dostava: ${amount(order.delivery)}`,
     `Za naplatu, pouzećem: ${amount(order.total)}`,
+    ...(issued
+      ? [
+          "",
+          recipient === "customer"
+            ? `Poklon za sledeću kupovinu — ${issued.title}: ${issued.percent}% popusta. Kod: ${issued.code} (važi za jednu kupovinu, uz isti email ili telefon).`
+            : `Kupcu je poslat kod ${issued.code} za ${issued.percent}% popusta pri sledećoj kupovini.`,
+        ]
+      : []),
     "",
     customer.name,
     address,
@@ -181,7 +211,9 @@ export function sampleOrder(): Order {
     ],
     subtotal: 2950,
     delivery: 450,
-    total: 3400,
+    total: 3105,
+    discount: { code: "SIR-PRIMER", percent: 10, amount: 295 },
+    issuedCode: { code: "SIR15", percent: 15, title: "Hvala na velikoj porudžbini" },
   };
 }
 

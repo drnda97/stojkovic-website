@@ -5,11 +5,6 @@ import { getPages } from "@/lib/content";
 
 type CustomPageProps = { params: Promise<{ slug: string }> };
 
-// Stranice se prave u admin panelu; nove se prikazuju pri prvoj poseti.
-export async function generateStaticParams() {
-  return (await getPages()).map((page) => ({ slug: page.slug }));
-}
-
 async function findPage(slug: string) {
   return (await getPages()).find((page) => page.slug === slug);
 }
@@ -32,7 +27,7 @@ export default async function CustomPage({ params }: CustomPageProps) {
   if (!page) notFound();
 
   return (
-    <section className="mx-auto box-content max-w-site px-[32px] pt-[72px] pb-[96px]">
+    <section className="mx-auto box-content max-w-site px-[16px] md:px-[32px] pt-[72px] pb-[96px]">
       <h1 className="max-w-[14em] text-[length:clamp(44px,5.5vw,72px)] leading-[1.05] text-balance">
         {page.title}
       </h1>

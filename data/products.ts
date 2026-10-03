@@ -1,11 +1,13 @@
 /**
- * Početni proizvodi. Važe dok se iz admin panela ne sačuva prva izmena; od
- * tada se proizvodi čitaju iz storage/content.json (vidi lib/content.ts).
+ * Početni proizvodi: upisuju se u praznu bazu pri prvom pokretanju (lib/db.ts).
+ * Posle toga se proizvodi menjaju u admin panelu, a izmene ovde nemaju efekta.
  *
- * Cena (`price`, u RSD) i gramaža (`weight`, u gramima) su `null` dok ih vlasnik
- * ne dostavi; sajt tada prikazuje „[CENA] RSD" i „[GRAMAŽA] g". Kada se upišu
- * brojevi, cene, međuzbir i ukupan iznos se računaju sami.
+ * Cene (`price`, u RSD) i gramaže (`weight`, u gramima) su PROBNE, upisane da
+ * bi korpa i poručivanje mogli da se testiraju; vlasnik ih menja u panelu.
+ * Proizvod kome je vrednost `null` prikazuje „[CENA] RSD" i „[GRAMAŽA] g".
  */
+
+export type LowStockMode = "off" | "always" | "auto";
 
 export type Product = {
   slug: string;
@@ -25,12 +27,24 @@ export type Product = {
   noWeight?: boolean;
   /** Cena u RSD. */
   price: number | null;
+  /** Cena na akciji, u RSD. Važi dok je upisana i niža od redovne; null: nema akcije. */
+  salePrice?: number | null;
+  /** Ručno stanje: važi dok se ne vodi broj komada (`stockQty`). Bez polja: na stanju. */
+  inStock?: boolean;
+  /** Broj komada na stanju; smanjuje se sam pri svakoj porudžbini. null: broj se ne vodi. */
+  stockQty?: number | null;
+  /** Oznaka „pri kraju": isključena, uvek prikazana, ili sama kada broj padne na prag. */
+  lowStockMode?: LowStockMode;
+  /** Prag za "auto": oznaka se prikazuje kada je na stanju ovoliko komada ili manje. */
+  lowStockThreshold?: number | null;
   /** Šta je na fotografiji — natpis u okviru koji čeka sliku. */
   photo: string;
   /** Natpis glavne fotografije na stranici proizvoda. */
   photoMain: string;
   /** Putanja do slike: iz /public/slike ili ubačena iz admin panela (/media/…). */
   image?: string;
+  /** Dodatne slike za galeriju na stranici proizvoda, redom kojim su dodate. */
+  gallery?: string[];
   /** Uvodni pasus na stranici proizvoda. */
   intro: string;
   /** Harmonika „Opis". */
@@ -65,8 +79,8 @@ export const products: Product[] = [
     category: "klasican",
     eyebrow: "Kozji sir",
     tagline: "Beli, blag, pun ukus",
-    weight: null,
-    price: null,
+    weight: 300,
+    price: 890,
     photo: "klasičan kozji sir",
     photoMain: "klasičan kozji sir, presek",
     image: "/slike/klasican.jpg",
@@ -89,8 +103,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Topao, blago dimljen ton",
-    weight: null,
-    price: null,
+    weight: 300,
+    price: 950,
     photo: "sir sa alevom paprikom",
     photoMain: "sir sa alevom paprikom, presek",
     image: "/slike/aleva-paprika.jpg",
@@ -113,8 +127,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Slan, mediteranski",
-    weight: null,
-    price: null,
+    weight: 350,
+    price: 1090,
     photo: "sir sa maslinama",
     photoMain: "sir sa maslinama, presek",
     image: "/slike/masline.jpg",
@@ -137,8 +151,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Svež, mirisan",
-    weight: null,
-    price: null,
+    weight: 250,
+    price: 920,
     photo: "sir sa začinskim biljem",
     photoMain: "sir sa začinskim biljem, presek",
     image: "/slike/zacinsko-bilje.jpg",
@@ -161,8 +175,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Izražen, za namaz i meze",
-    weight: null,
-    price: null,
+    weight: 300,
+    price: 980,
     photo: "sir sa belim lukom",
     photoMain: "sir sa belim lukom, presek",
     image: "/slike/beli-luk-mirodjija.jpg",
@@ -185,8 +199,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Pikantan, aromatičan",
-    weight: null,
-    price: null,
+    weight: 250,
+    price: 940,
     photo: "sir sa biberom",
     photoMain: "sir sa biberom, presek",
     image: "/slike/sareni-biber.jpg",
@@ -209,8 +223,8 @@ export const products: Product[] = [
     category: "sa-ukusima",
     eyebrow: "Kozji sir sa ukusom",
     tagline: "Ljut, za one koji vole jače",
-    weight: null,
-    price: null,
+    weight: 200,
+    price: 860,
     photo: "sir sa ljutom papričicom",
     photoMain: "sir sa ljutom papričicom, presek",
     image: "/slike/ljuta-papricica.jpg",
@@ -234,7 +248,7 @@ export const products: Product[] = [
     eyebrow: "Paket",
     tagline: "Po jedan komad od svakog ukusa",
     weight: null,
-    price: null,
+    price: 5900,
     photo: "paket sa više vakuumiranih sireva",
     photoMain: "paket sa više vakuumiranih sireva",
     image: "/slike/degustacioni-paket.jpg",
@@ -251,6 +265,45 @@ export const products: Product[] = [
     ],
   },
 ];
+
+/** Akcija važi kada je akcijska cena upisana i niža od redovne. */
+export function isOnSale(product: Product): boolean {
+  return product.price !== null && product.salePrice != null && product.salePrice < product.price;
+}
+
+/** Cena po kojoj se proizvod trenutno prodaje: akcijska ako važi, inače redovna. */
+export function currentPrice(product: Product): number | null {
+  return isOnSale(product) ? (product.salePrice as number) : product.price;
+}
+
+/** Sniženje u procentima, zaokruženo, za oznaku na proizvodu; null kada nema akcije. */
+export function salePercent(product: Product): number | null {
+  if (!isOnSale(product)) return null;
+  return Math.round((1 - (product.salePrice as number) / (product.price as number)) * 100);
+}
+
+/** Može li proizvod da se poruči: po broju komada ako se vodi, inače po ručnom stanju. */
+export function isAvailable(product: Product): boolean {
+  return product.stockQty != null ? product.stockQty > 0 : (product.inStock ?? true);
+}
+
+/** Koliko komada najviše može u jednu porudžbinu; null kada se broj ne vodi. */
+export function stockLimit(product: Product): number | null {
+  return product.stockQty ?? null;
+}
+
+/** Tekst oznake „pri kraju" za kupca, ili null kada se ne prikazuje. */
+export function lowStockLabel(product: Product): string | null {
+  if (!isAvailable(product)) return null;
+  const qty = product.stockQty ?? null;
+  const mode = product.lowStockMode ?? "off";
+  const show =
+    mode === "always" ||
+    (mode === "auto" && qty !== null && qty <= (product.lowStockThreshold ?? 0));
+  if (!show) return null;
+  if (qty === null) return "Pri kraju";
+  return qty === 1 ? "Još samo 1 komad" : `Još samo ${qty} kom.`;
+}
 
 /** Paket se ne prodaje na gramažu, pa se kod njega gramaža ne prikazuje. */
 export function hasWeight(product: Product): boolean {

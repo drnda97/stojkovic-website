@@ -5,7 +5,7 @@
  * ubaci nova. Novo mesto za sliku dodaje se ovde, a zatim se na stranici čita
  * preko `getPageImages()` iz lib/content.ts.
  */
-/** Stranice koje postoje u kodu. Stranice napravljene u admin panelu su u storage/content.json. */
+/** Stranice koje postoje u kodu. Stranice napravljene u admin panelu su u bazi. */
 export const builtInPages = [
   { id: "pocetna", title: "Početna", href: "/" },
   { id: "o-nama", title: "O nama", href: "/o-nama" },

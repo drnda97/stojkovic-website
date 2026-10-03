@@ -79,6 +79,18 @@ export function ProductForm({ product, filters, error }: ProductFormProps) {
             />
           </label>
           <label className={labelClass}>
+            Cena na akciji (RSD)
+            <input
+              name="salePrice"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.salePrice ?? ""}
+              placeholder="nema akcije"
+              className={inputClass}
+            />
+          </label>
+          <label className={labelClass}>
             Gramaža (g)
             <input
               name="weight"
@@ -96,6 +108,68 @@ export function ProductForm({ product, filters, error }: ProductFormProps) {
           Prodaje se bez gramaže (npr. paket)
         </label>
 
+        <fieldset className="flex flex-col gap-[16px] rounded-[6px] border border-line p-[16px]">
+          <legend className="px-[6px] text-[15px] font-medium text-ink">Stanje</legend>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-[16px]">
+            <label className={labelClass}>
+              Ručno stanje
+              <select
+                name="inStock"
+                defaultValue={(product?.inStock ?? true) ? "yes" : "no"}
+                className={inputClass}
+              >
+                <option value="yes">Na stanju</option>
+                <option value="no">Nema na stanju</option>
+              </select>
+            </label>
+            <label className={labelClass}>
+              Broj komada na stanju
+              <input
+                name="stockQty"
+                type="number"
+                min="0"
+                step="1"
+                defaultValue={product?.stockQty ?? ""}
+                placeholder="ne vodi se"
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <p className="mt-[-8px] text-[14px] text-muted">
+            Ako upišete broj komada, stanje se vodi samo: svaka porudžbina ga smanjuje, a na nuli
+            proizvod postaje rasprodat. Dok je polje prazno, važi ručno stanje.
+          </p>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-[16px]">
+            <label className={labelClass}>
+              Oznaka „pri kraju“ na sajtu
+              <select
+                name="lowStockMode"
+                defaultValue={product?.lowStockMode ?? "off"}
+                className={inputClass}
+              >
+                <option value="off">Ne prikazuj</option>
+                <option value="always">Uvek prikazuj</option>
+                <option value="auto">Sama, kada broj padne na prag</option>
+              </select>
+            </label>
+            <label className={labelClass}>
+              Prag (komada)
+              <input
+                name="lowStockThreshold"
+                type="number"
+                min="1"
+                step="1"
+                defaultValue={product?.lowStockThreshold ?? ""}
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <p className="mt-[-8px] text-[14px] text-muted">
+            Prag važi samo uz upisan broj komada: sa pragom 5, kupac vidi „Još samo 5 kom.“ čim ih
+            ostane pet ili manje.
+          </p>
+        </fieldset>
+
         <div className={labelClass}>
           Slika proizvoda ({IMAGE_HINT})
           <div className="flex flex-wrap items-center gap-[16px]">
@@ -109,6 +183,39 @@ export function ProductForm({ product, filters, error }: ProductFormProps) {
             />
           </div>
           {product?.image && <span>Ako ne izaberete novu, ostaje trenutna slika.</span>}
+        </div>
+
+        <div className={labelClass}>
+          Dodatne slike za galeriju na stranici proizvoda
+          {(product?.gallery ?? []).length > 0 && (
+            <div className="flex flex-wrap gap-[16px]">
+              {(product?.gallery ?? []).map((src) => (
+                <label
+                  key={src}
+                  className="flex cursor-pointer flex-col items-center gap-[6px] text-ink"
+                >
+                  <Thumb src={src} alt="" />
+                  <span className="flex items-center gap-[6px] text-[13px]">
+                    <Checkbox name="galleryRemove" value={src} />
+                    Ukloni
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          <input
+            type="file"
+            name="gallery"
+            accept={IMAGE_ACCEPT}
+            multiple
+            aria-label="Dodatne slike"
+            className={fileClass}
+          />
+          <span>
+            Možete izabrati više slika odjednom (zajedno do 15 MB). Na sajtu idu posle glavne slike,
+            redom kojim su dodate; klik na malu sliku je prikazuje kao veliku. Dok proizvod nema
+            dodatnih slika, ispod glavne stoje tri zajedničke iz dela Stranice → Stranica proizvoda.
+          </span>
         </div>
 
         <label className={labelClass}>

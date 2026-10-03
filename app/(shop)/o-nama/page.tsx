@@ -51,14 +51,14 @@ export default async function AboutPage() {
 
   return (
     <>
-      <section className="mx-auto box-content flex max-w-site flex-col gap-[20px] px-[32px] pt-[88px] pb-[64px]">
+      <section className="mx-auto box-content flex max-w-site flex-col gap-[20px] px-[16px] md:px-[32px] pt-[88px] pb-[64px]">
         <div className={eyebrow}>O nama</div>
         <h1 className="max-w-[12em] text-[length:clamp(44px,6vw,84px)] leading-[1.02] text-balance">
           Malo gazdinstvo, koze i sir koji pravimo sami.
         </h1>
       </section>
 
-      <div className="mx-auto box-content max-w-site px-[32px]">
+      <div className="mx-auto box-content max-w-site px-[16px] md:px-[32px]">
         <Placeholder
           label="Fotografija · imanje i stado, široki kadar"
           src={images["imanje-i-stado"]}
@@ -67,7 +67,7 @@ export default async function AboutPage() {
         />
       </div>
 
-      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(360px,100%),1fr))] gap-x-[80px] gap-y-[40px] px-[32px] py-[96px]">
+      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(360px,100%),1fr))] gap-x-[80px] gap-y-[40px] px-[16px] md:px-[32px] py-[96px]">
         <h2 className="text-[length:clamp(32px,3.6vw,46px)] leading-[1.12] text-balance">
           Priroda dobrih ukusa nije slogan. To je redosled kojim radimo.
         </h2>
@@ -90,7 +90,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="bg-band">
-        <div className="mx-auto box-content max-w-site px-[32px] py-[96px]">
+        <div className="mx-auto box-content max-w-site px-[16px] md:px-[32px] py-[96px]">
           <div className="mb-[48px] flex flex-col gap-[10px]">
             <div className={eyebrow}>Zašto kozji sir</div>
             <h2 className="text-[length:clamp(32px,3.6vw,46px)] leading-[1.1]">
@@ -111,7 +111,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-start gap-[64px] px-[32px] py-[96px]">
+      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-start gap-[64px] px-[16px] md:px-[32px] py-[96px]">
         <Placeholder
           label="Fotografija · ruke koje oblikuju sir u sirani"
           src={images["ruke-u-sirani"]}
@@ -144,7 +144,7 @@ export default async function AboutPage() {
       </section>
 
       <section className="border-t border-line">
-        <div className="mx-auto box-content flex max-w-site flex-col items-center gap-[24px] px-[32px] py-[88px] text-center">
+        <div className="mx-auto box-content flex max-w-site flex-col items-center gap-[24px] px-[16px] md:px-[32px] py-[88px] text-center">
           <h2 className="text-[length:clamp(34px,4vw,52px)] leading-[1.1] text-balance">
             Najbolje se objašnjava na tanjiru.
           </h2>

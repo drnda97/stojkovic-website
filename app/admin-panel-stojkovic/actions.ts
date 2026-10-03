@@ -2,8 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  isValidCode,
+  normalizeCode,
+  triggerLabels,
+  type Discount,
+  type DiscountTrigger,
+} from "@/data/discounts";
 import { builtInPages, isPageImageId, pageImageSlots } from "@/data/page-images";
-import { FEATURED_COLLECTION_ID, type Product } from "@/data/products";
+import { FEATURED_COLLECTION_ID, type LowStockMode, type Product } from "@/data/products";
 import {
   defaultSettings,
   fontOptions,
@@ -20,6 +27,7 @@ import {
 } from "@/lib/admin-auth";
 import {
   getCollections,
+  getDiscounts,
   getFilters,
   getPageImages,
   getPages,
@@ -62,6 +70,14 @@ function wholeNumber(formData: FormData, name: string): number | null {
   return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
 }
 
+/** Broj komada iz forme: null kada je polje prazno, false kada nije ceo broj od nule naviše. */
+function optionalCount(formData: FormData, name: string): number | null | false {
+  const value = text(formData, name);
+  if (value === "") return null;
+  const count = Number(value);
+  return Number.isInteger(count) && count >= 0 ? count : false;
+}
+
 function image(formData: FormData, name: string): File | null {
   const value = formData.get(name);
   return value instanceof File && value.size > 0 ? value : null;
@@ -90,7 +106,7 @@ function backWithError(path: string, message: string): never {
   redirect(`${path}?greska=${encodeURIComponent(message)}`);
 }
 
-/** Izmena se vidi odmah na celom sajtu: sve stranice se prave iznova pri sledećoj poseti. */
+/** Stranice već otvorene u pregledaču vlasnika dobijaju svež sadržaj pri sledećem prelasku. */
 function refreshSite() {
   revalidatePath("/", "layout");
 }
@@ -154,12 +170,31 @@ export async function saveProductAction(formData: FormData) {
 
   // Slug se pravi jednom, pri dodavanju, i više se ne menja — da linkovi i korpe kupaca ostanu ispravni.
   const slug =
-    existing?.slug ??
-    uniqueSlug(
-      fullName,
-      products.map((product) => product.slug),
-    );
+    existing?.slug ?? uniqueSlug(fullName, ["novi", ...products.map((product) => product.slug)]);
   if (!slug) backWithError(formPath, "Naziv mora da sadrži bar jedno slovo ili cifru.");
+
+  // Akcija: prazno polje je gasi. Akcijska cena mora biti niža od redovne.
+  const price = wholeNumber(formData, "price");
+  const salePrice = wholeNumber(formData, "salePrice");
+  if (salePrice !== null && (price === null || salePrice >= price)) {
+    backWithError(formPath, "Cena na akciji mora biti niža od redovne cene.");
+  }
+
+  // Stanje: prazno polje za broj znači da se broj ne vodi i da važi ručno stanje.
+  const stockQty = optionalCount(formData, "stockQty");
+  if (stockQty === false)
+    backWithError(formPath, "Broj komada na stanju je ceo broj, nula ili više.");
+  const modeValue = text(formData, "lowStockMode");
+  const lowStockMode: LowStockMode =
+    modeValue === "always" || modeValue === "auto" ? modeValue : "off";
+  const lowStockThreshold = optionalCount(formData, "lowStockThreshold");
+  if (lowStockThreshold === false) backWithError(formPath, "Prag je ceo broj komada.");
+  if (lowStockMode === "auto" && (stockQty === null || !lowStockThreshold)) {
+    backWithError(
+      formPath,
+      "Da bi se oznaka „pri kraju“ prikazivala sama, upišite i broj komada na stanju i prag.",
+    );
+  }
 
   let imageSrc = existing?.image;
   const file = image(formData, "image");
@@ -168,6 +203,22 @@ export async function saveProductAction(formData: FormData) {
     if (!upload.ok) backWithError(formPath, upload.error);
     imageSrc = upload.src;
   }
+
+  // Galerija: označene slike se uklanjaju, nove se dodaju na kraj.
+  const removed = formData.getAll("galleryRemove").filter((value) => typeof value === "string");
+  const gallery = (existing?.gallery ?? []).filter((src) => !removed.includes(src));
+  const added: string[] = [];
+  for (const value of formData.getAll("gallery")) {
+    if (!(value instanceof File) || value.size === 0) continue;
+    const upload = await saveUpload(value, slug);
+    if (!upload.ok) {
+      // Ništa se ne čuva napola: već primljene slike iz ovog slanja se brišu.
+      for (const src of added) await removeUpload(src);
+      backWithError(formPath, upload.error);
+    }
+    added.push(upload.src);
+  }
+  gallery.push(...added);
 
   const product: Product = {
     slug,
@@ -178,10 +229,16 @@ export async function saveProductAction(formData: FormData) {
     tagline: text(formData, "tagline"),
     weight: wholeNumber(formData, "weight"),
     noWeight: formData.get("noWeight") === "on",
-    price: wholeNumber(formData, "price"),
+    price,
+    salePrice,
+    inStock: text(formData, "inStock") !== "no",
+    stockQty,
+    lowStockMode,
+    lowStockThreshold,
     photo: existing?.photo ?? fullName.toLowerCase(),
     photoMain: existing?.photoMain ?? fullName.toLowerCase(),
     image: imageSrc,
+    gallery,
     intro: text(formData, "intro"),
     description: text(formData, "description"),
     ingredients: text(formData, "ingredients"),
@@ -193,6 +250,9 @@ export async function saveProductAction(formData: FormData) {
       : [...content.products, product];
   });
   if (file) await removeUpload(existing?.image);
+  for (const src of existing?.gallery ?? []) {
+    if (removed.includes(src)) await removeUpload(src);
+  }
 
   refreshSite();
   redirect(PRODUCTS_PATH);
@@ -211,8 +271,28 @@ export async function deleteProductAction(formData: FormData) {
       }
     });
     await removeUpload(product.image);
+    for (const src of product.gallery ?? []) await removeUpload(src);
     refreshSite();
   }
+  redirect(PRODUCTS_PATH);
+}
+
+/** Brza izmena stanja iz spiska proizvoda: klik menja ručno stanje, a broj se upisuje direktno. */
+export async function setStockAction(formData: FormData) {
+  await requireAdmin();
+
+  const slug = text(formData, "slug");
+  const stockQty = formData.has("stockQty") ? optionalCount(formData, "stockQty") : undefined;
+  if (stockQty === false)
+    backWithError(PRODUCTS_PATH, "Broj komada na stanju je ceo broj, nula ili više.");
+
+  await updateContent((content) => {
+    const product = content.products.find((item) => item.slug === slug);
+    if (!product) return;
+    if (stockQty === undefined) product.inStock = !(product.inStock ?? true);
+    else product.stockQty = stockQty;
+  });
+  refreshSite();
   redirect(PRODUCTS_PATH);
 }
 
@@ -331,6 +411,90 @@ export async function deleteFilterAction(formData: FormData) {
   });
   refreshSite();
   redirect(FILTERS_PATH);
+}
+
+/* ---------- Popusti ---------- */
+
+const DISCOUNTS_PATH = `${ADMIN_PATH}/popusti`;
+
+export async function saveDiscountAction(formData: FormData) {
+  await requireAdmin();
+
+  const discounts = await getDiscounts();
+  const editedId = text(formData, "id");
+  const existing = discounts.find((discount) => discount.id === editedId);
+  const formPath = existing ? `${DISCOUNTS_PATH}/${existing.id}` : `${DISCOUNTS_PATH}/novi`;
+  if (editedId && !existing) backWithError(DISCOUNTS_PATH, "Popust više ne postoji.");
+
+  const name = text(formData, "name");
+  if (!name) backWithError(formPath, "Upišite naslov popusta.");
+  // Kod je neobavezan: bez njega svaki kupac dobija svoj, nasumičan kod.
+  const code = normalizeCode(text(formData, "code"));
+  if (code !== "" && !isValidCode(code)) {
+    backWithError(formPath, "Kod može imati 3–32 znaka: slova bez kvačica, cifre i crticu.");
+  }
+  if (code !== "" && discounts.some((item) => item.code === code && item.id !== existing?.id)) {
+    backWithError(formPath, "Taj kod već koristi drugi popust. Svaki popust mora imati svoj kod.");
+  }
+  const percent = Number(text(formData, "percent"));
+  if (!Number.isInteger(percent) || percent < 1 || percent > 100) {
+    backWithError(formPath, "Popust je ceo broj od 1 do 100.");
+  }
+  const triggerValue = text(formData, "trigger");
+  if (!(triggerValue in triggerLabels)) backWithError(formPath, "Izaberite kada se popust šalje.");
+  const trigger = triggerValue as DiscountTrigger;
+  // Prva porudžbina nema prag; iznos i težina ga moraju imati.
+  const threshold = trigger === "first" ? 0 : Number(text(formData, "threshold"));
+  if (!Number.isInteger(threshold) || (trigger !== "first" && threshold < 1)) {
+    backWithError(
+      formPath,
+      trigger === "amount"
+        ? "Upišite iznos u dinarima od kog se popust šalje."
+        : "Upišite težinu u gramima od koje se popust šalje.",
+    );
+  }
+
+  const discount: Discount = {
+    id:
+      existing?.id ??
+      (uniqueSlug(name, ["novi", ...discounts.map((item) => item.id)]) ||
+        `popust-${Date.now().toString(36)}`),
+    name,
+    code,
+    percent,
+    status: text(formData, "status") === "active" ? "active" : "draft",
+    trigger,
+    threshold,
+  };
+  await updateContent((content) => {
+    content.discounts = existing
+      ? content.discounts.map((item) => (item.id === discount.id ? discount : item))
+      : [...content.discounts, discount];
+  });
+  redirect(DISCOUNTS_PATH);
+}
+
+/** Prebacuje popust između nacrta i aktivnog. */
+export async function toggleDiscountAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  await updateContent((content) => {
+    const discount = content.discounts.find((item) => item.id === id);
+    if (discount) discount.status = discount.status === "active" ? "draft" : "active";
+  });
+  redirect(DISCOUNTS_PATH);
+}
+
+/** Briše pravilo. Kodovi koji su već poslati kupcima ostaju da važe. */
+export async function deleteDiscountAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  await updateContent((content) => {
+    content.discounts = content.discounts.filter((item) => item.id !== id);
+  });
+  redirect(DISCOUNTS_PATH);
 }
 
 /* ---------- Stranice ---------- */
@@ -537,6 +701,25 @@ export async function resetAppearanceAction() {
   });
   refreshSite();
   backWithNotice("Vraćene su boje i fontovi iz dizajna.");
+}
+
+export async function saveShippingAction(formData: FormData) {
+  await requireAdmin();
+
+  const freeFrom = Number(text(formData, "freeFrom"));
+  if (!Number.isInteger(freeFrom) || freeFrom < 1) {
+    backWithError(SETTINGS_PATH, "Iznos za besplatnu dostavu je ceo broj dinara, veći od nule.");
+  }
+  const freeEnabled = formData.get("freeEnabled") === "on";
+  await updateContent((content) => {
+    content.settings.shipping = { freeEnabled, freeFrom };
+  });
+  refreshSite();
+  backWithNotice(
+    freeEnabled
+      ? "Besplatna dostava je uključena."
+      : "Besplatna dostava je isključena; iznos je sačuvan.",
+  );
 }
 
 function emailAddress(formData: FormData, name: string, label: string): string {

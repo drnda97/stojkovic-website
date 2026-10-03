@@ -3,19 +3,24 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useCart } from "@/components/cart-provider";
+import { DiscountField } from "@/components/discount-field";
+import { FreeShippingBar } from "@/components/free-shipping-bar";
 import { Placeholder } from "@/components/placeholder";
+import { Price } from "@/components/price";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { hasWeight } from "@/data/products";
-import { getSubtotal } from "@/lib/cart";
+import { maxQty } from "@/lib/cart";
 import { formatPieces, formatPrice, formatWeight } from "@/lib/format";
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input, textarea, [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input, textarea, [tabindex]:not([tabindex="-1"])';
 
 const primaryAction =
   "flex min-h-[56px] items-center justify-center bg-ink text-[14px] tracking-[0.14em] text-paper uppercase";
 
 export function CartDrawer() {
-  const { isOpen, closeCart, lines, count, setQty, remove } = useCart();
+  const { isOpen, closeCart, lines, count, setQty, remove, pricing, discount, freeShippingFrom } =
+    useCart();
   const panelRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -68,6 +73,8 @@ export function CartDrawer() {
   if (!isOpen) return null;
 
   const hasItems = lines.length > 0;
+  // Zbir proizvoda posle popusta; po njemu se meri i besplatna dostava.
+  const paid = pricing.subtotal === null ? null : pricing.subtotal - pricing.discount;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -83,37 +90,37 @@ export function CartDrawer() {
         role="dialog"
         aria-modal="true"
         aria-label="Korpa"
-        className={`relative flex h-full w-[min(460px,100%)] animate-drawer-in flex-col gap-[24px] overflow-auto bg-paper px-[32px] py-[28px] text-[16px] ${hasItems ? "leading-[1.6]" : ""}`}
+        className={`relative flex h-full w-[min(460px,100%)] animate-drawer-in flex-col bg-paper text-[16px] ${hasItems ? "leading-[1.6]" : ""}`}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-[34px]">
-            Korpa
-            {hasItems && (
-              <span className="font-sans text-[15px] text-muted">
-                {" "}
-                · {formatPieces(count)}
-              </span>
-            )}
-          </h2>
-          <button
-            ref={closeRef}
-            type="button"
-            aria-label="Zatvori korpu"
-            onClick={closeCart}
-            className="h-[44px] w-[44px] cursor-pointer text-[26px] text-ink"
-          >
-            ×
-          </button>
+        {/* Vrh i dno stoje na mestu; skroluje se samo spisak proizvoda između njih. */}
+        <div className="flex shrink-0 flex-col gap-[16px] px-[16px] md:px-[32px] pt-[28px] pb-[20px]">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[34px]">
+              Korpa
+              {hasItems && (
+                <span className="font-sans text-[15px] text-muted"> · {formatPieces(count)}</span>
+              )}
+            </h2>
+            <button
+              ref={closeRef}
+              type="button"
+              aria-label="Zatvori korpu"
+              onClick={closeCart}
+              className="h-[44px] w-[44px] cursor-pointer text-[26px] text-ink"
+            >
+              ×
+            </button>
+          </div>
+          {hasItems && freeShippingFrom !== null && paid !== null && (
+            <FreeShippingBar amount={paid} freeFrom={freeShippingFrom} />
+          )}
         </div>
 
         {hasItems ? (
           <>
-            <div className="flex flex-col">
-              {lines.map(({ product, qty }, index) => (
-                <div
-                  key={product.slug}
-                  className={`flex gap-[16px] border-t border-line py-[20px] ${index === lines.length - 1 ? "border-b" : ""}`}
-                >
+            <div className="flex min-h-0 grow flex-col overflow-auto px-[16px] md:px-[32px]">
+              {lines.map(({ product, qty }) => (
+                <div key={product.slug} className="flex gap-[16px] border-t border-line py-[20px]">
                   <Placeholder
                     label="Foto"
                     variant="mini"
@@ -127,13 +134,14 @@ export function CartDrawer() {
                     </div>
                     <div className="text-[14px] text-muted">
                       {hasWeight(product) && `${formatWeight(product.weight)} · `}
-                      {formatPrice(product.price)}
+                      <Price product={product} />
                     </div>
                     <div className="flex items-center justify-between gap-[12px]">
                       <QuantityStepper
                         size="sm"
                         value={qty}
                         onChange={(value) => setQty(product.slug, value)}
+                        max={maxQty(product)}
                       />
                       <button
                         type="button"
@@ -148,31 +156,41 @@ export function CartDrawer() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-[6px]">
-              <div className="flex justify-between text-[18px]">
-                <span>Međuzbir</span>
-                <span>{formatPrice(getSubtotal(lines), "[IZNOS]")}</span>
+            <div className="flex shrink-0 flex-col gap-[12px] border-t border-line px-[16px] md:px-[32px] pt-[16px] pb-[20px]">
+              <DiscountField collapsed />
+              <div className="flex flex-col gap-[4px]">
+                {pricing.discount > 0 && (
+                  <div className="flex justify-between text-[15px] text-muted">
+                    <span>Popust {discount?.percent}%</span>
+                    <span>−{formatPrice(pricing.discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[18px]">
+                  <span>Međuzbir</span>
+                  <span>{formatPrice(paid, "[IZNOS]")}</span>
+                </div>
+                <div className="text-[14px] text-muted">
+                  {pricing.delivery === 0
+                    ? "Dostava je besplatna. Plaćanje pouzećem."
+                    : "Dostava se obračunava u sledećem koraku. Plaćanje pouzećem."}
+                </div>
               </div>
-              <div className="text-[14px] text-muted">
-                Dostava se obračunava u sledećem koraku. Plaćanje pouzećem.
+              <div className="flex flex-col">
+                <Link href="/porudzbina" onClick={closeCart} className={primaryAction}>
+                  Nastavi na porudžbinu
+                </Link>
+                <button
+                  type="button"
+                  onClick={closeCart}
+                  className="min-h-[48px] cursor-pointer text-[15px] text-ink underline"
+                >
+                  Nastavi kupovinu
+                </button>
               </div>
-            </div>
-
-            <div className="flex flex-col gap-[8px]">
-              <Link href="/porudzbina" onClick={closeCart} className={primaryAction}>
-                Nastavi na porudžbinu
-              </Link>
-              <button
-                type="button"
-                onClick={closeCart}
-                className="min-h-[48px] cursor-pointer text-[15px] text-ink underline"
-              >
-                Nastavi kupovinu
-              </button>
             </div>
           </>
         ) : (
-          <div className="flex flex-col gap-[20px] border-t border-line pt-[24px]">
+          <div className="mx-[16px] md:mx-[32px] flex flex-col gap-[20px] border-t border-line pt-[24px]">
             <p className="text-muted">Korpa je prazna.</p>
             <Link href="/sirevi" onClick={closeCart} className={primaryAction}>
               Pogledaj sireve

@@ -26,7 +26,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[32px] py-[72px]">
+      <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[16px] md:px-[32px] py-[72px]">
         <div className="flex flex-col items-start gap-[28px]">
           <div className={eyebrow}>Priroda dobrih ukusa</div>
           <h1 className="text-[length:clamp(46px,6vw,80px)] leading-[1.02] text-balance">
@@ -51,7 +51,7 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-line">
-        <div className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-x-[48px] gap-y-[32px] px-[32px] py-[44px]">
+        <div className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-x-[48px] gap-y-[32px] px-[16px] md:px-[32px] py-[44px]">
           <div className="flex flex-col gap-[6px]">
             <h3 className="text-[24px]">Ručna proizvodnja</h3>
             <p className="text-[15px] text-muted">
@@ -73,7 +73,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto box-content max-w-site px-[32px] py-[96px]">
+      <section className="mx-auto box-content max-w-site px-[16px] md:px-[32px] py-[96px]">
         <div className="mb-[48px] flex flex-wrap items-end justify-between gap-[16px]">
           <div className="flex flex-col gap-[10px]">
             <div className={eyebrow}>Iz naše sirane</div>
@@ -91,7 +91,7 @@ export default async function HomePage() {
       </section>
 
       <section className="bg-band">
-        <div className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[32px] py-[96px]">
+        <div className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-center gap-[64px] px-[16px] md:px-[32px] py-[96px]">
           <Placeholder
             label="Fotografija · koze na ispaši na imanju"
             src={images["koze-na-ispasi"]}
@@ -115,7 +115,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto box-content max-w-site px-[32px] py-[96px]">
+      <section className="mx-auto box-content max-w-site px-[16px] md:px-[32px] py-[96px]">
         <div className="mb-[48px] flex flex-col gap-[10px]">
           <div className={eyebrow}>Kako se poručuje</div>
           <h2 className="text-[length:clamp(34px,4vw,52px)] leading-[1.1]">

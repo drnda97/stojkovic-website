@@ -6,11 +6,6 @@ import { getCollections, getProducts } from "@/lib/content";
 
 type CollectionPageProps = { params: Promise<{ id: string }> };
 
-// Kolekcije se prave u admin panelu; nove se prikazuju pri prvoj poseti.
-export async function generateStaticParams() {
-  return (await getCollections()).map((collection) => ({ id: collection.id }));
-}
-
 async function findCollection(id: string) {
   return (await getCollections()).find((collection) => collection.id === id);
 }
@@ -27,7 +22,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   const products = getCollectionProducts(collection, await getProducts());
 
   return (
-    <section className="mx-auto box-content max-w-site px-[32px] pt-[72px] pb-[96px]">
+    <section className="mx-auto box-content max-w-site px-[16px] md:px-[32px] pt-[72px] pb-[96px]">
       <div className="mb-[56px] flex max-w-[640px] flex-col gap-[14px]">
         <div className="text-[12px] tracking-[0.2em] text-brass uppercase">Kolekcija</div>
         <h1 className="text-[length:clamp(44px,5.5vw,72px)] leading-[1.05]">{collection.name}</h1>

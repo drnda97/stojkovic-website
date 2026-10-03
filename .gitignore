@@ -40,5 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sadržaj iz admin panela (proizvodi i ubačene slike)
+# slike ubačene iz admin panela i rezervne kopije
 /storage/
+/backups/

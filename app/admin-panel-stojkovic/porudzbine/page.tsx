@@ -123,7 +123,17 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     </span>
                   </div>
                 ))}
-                <div className="mt-[6px] flex justify-between gap-[12px] border-t border-line pt-[6px] text-muted">
+                {order.discount && (
+                  <div className="mt-[6px] flex justify-between gap-[12px] border-t border-line pt-[6px] text-muted">
+                    <span>
+                      Popust {order.discount.percent}% (kod {order.discount.code})
+                    </span>
+                    <span>−{formatAmount(order.discount.amount)}</span>
+                  </div>
+                )}
+                <div
+                  className={`flex justify-between gap-[12px] text-muted ${order.discount ? "" : "mt-[6px] border-t border-line pt-[6px]"}`}
+                >
                   <span>Dostava</span>
                   <span>{formatAmount(order.delivery)}</span>
                 </div>
@@ -133,6 +143,15 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                 </div>
               </div>
             </div>
+
+            {order.issuedCode && (
+              <p className="mt-[12px] text-[14px] text-muted">
+                Kupcu je poslat kod{" "}
+                <span className="font-mono text-ink">{order.issuedCode.code}</span> za{" "}
+                {order.issuedCode.percent}% popusta pri sledećoj kupovini
+                {order.issuedCode.title && ` (${order.issuedCode.title})`}.
+              </p>
+            )}
 
             {order.emailError && (
               <p className="mt-[12px] rounded-[6px] border border-line-strong px-[12px] py-[8px] text-[14px]">

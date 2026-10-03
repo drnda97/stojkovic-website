@@ -62,6 +62,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <NavLink href={`${ADMIN_PATH}/proizvodi`}>Proizvodi</NavLink>
           <NavLink href={`${ADMIN_PATH}/kolekcije`}>Kolekcije</NavLink>
           <NavLink href={`${ADMIN_PATH}/filteri`}>Filteri</NavLink>
+          <NavLink href={`${ADMIN_PATH}/popusti`}>Popusti</NavLink>
 
           <div className={groupTitle}>Stranice</div>
           {builtInPages.map((page) => (

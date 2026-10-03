@@ -27,6 +27,7 @@
 
   --animate-drawer-in: drawer-in 220ms ease-out;
   --animate-fade-in: fade-in 220ms ease-out;
+  --animate-cheese-pop: cheese-pop 700ms ease-out;
 
   @keyframes drawer-in {
     from {
@@ -34,6 +35,22 @@
     }
     to {
       transform: translateX(0);
+    }
+  }
+
+  /* Kolut sira u korpi, kada se dostigne besplatna dostava. */
+  @keyframes cheese-pop {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    40% {
+      transform: scale(1.28) rotate(-14deg);
+    }
+    70% {
+      transform: scale(0.94) rotate(7deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
     }
   }
 

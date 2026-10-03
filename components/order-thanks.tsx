@@ -13,7 +13,7 @@ export function OrderThanks() {
   const { orderNumber, total } = parseLastOrder(raw);
 
   return (
-    <section className="mx-auto box-content flex max-w-[720px] flex-col items-start gap-[24px] px-[32px] pt-[120px] pb-[160px]">
+    <section className="mx-auto box-content flex max-w-[720px] flex-col items-start gap-[24px] px-[16px] md:px-[32px] pt-[120px] pb-[160px]">
       <div className="text-[12px] tracking-[0.2em] text-brass uppercase">
         Porudžbina br. {orderNumber ?? "[BROJ]"}
       </div>
@@ -21,9 +21,8 @@ export function OrderThanks() {
         Hvala, porudžbina je primljena.
       </h1>
       <p className="text-muted">
-        Javićemo se telefonom u toku {site.callbackTime} da potvrdimo porudžbinu i dan slanja.
-        Ništa ne plaćate sada — iznos od {formatPrice(total, "[UKUPNO]")} plaćate kuriru pri
-        preuzimanju.
+        Javićemo se telefonom u toku {site.callbackTime} da potvrdimo porudžbinu i dan slanja. Ništa
+        ne plaćate sada — iznos od {formatPrice(total, "[UKUPNO]")} plaćate kuriru pri preuzimanju.
       </p>
       <Link
         href="/"

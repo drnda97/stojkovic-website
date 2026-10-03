@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { placeOrder } from "@/app/(checkout)/porudzbina/actions";
 import { useCart } from "@/components/cart-provider";
+import { DiscountField } from "@/components/discount-field";
 import { Placeholder } from "@/components/placeholder";
-import { hasWeight } from "@/data/products";
+import { currentPrice, hasWeight } from "@/data/products";
 import { site } from "@/data/site";
-import { getDelivery, getSubtotal, getTotal } from "@/lib/cart";
 import { formatPrice, formatWeight } from "@/lib/format";
 import { saveLastOrder } from "@/lib/last-order";
 import {
@@ -28,7 +28,15 @@ const fieldIds: Record<CustomerField, string> = {
   note: "nap",
 };
 
-const fieldOrder: CustomerField[] = ["name", "phone", "email", "street", "city", "postalCode", "note"];
+const fieldOrder: CustomerField[] = [
+  "name",
+  "phone",
+  "email",
+  "street",
+  "city",
+  "postalCode",
+  "note",
+];
 
 const labelClass = "text-[14px] text-muted";
 const hintClass = "text-[14px] text-muted";
@@ -41,7 +49,7 @@ function inputClass(invalid: boolean) {
 
 export function Checkout() {
   const router = useRouter();
-  const { lines, hydrated, clear } = useCart();
+  const { lines, hydrated, clear, pricing, discount, setDiscount } = useCart();
   const [customer, setCustomer] = useState<OrderCustomer>(emptyCustomer);
   const [errors, setErrors] = useState<OrderErrors>({});
   const [formMessage, setFormMessage] = useState<string | null>(null);
@@ -60,9 +68,7 @@ export function Checkout() {
     return <div className="min-h-[60vh]" />;
   }
 
-  const subtotal = getSubtotal(lines);
-  const delivery = getDelivery(subtotal);
-  const total = getTotal(lines);
+  const { subtotal, delivery, total } = pricing;
 
   function update(field: CustomerField, value: string) {
     setCustomer((current) => ({ ...current, [field]: value }));
@@ -90,6 +96,7 @@ export function Checkout() {
         const result = await placeOrder({
           customer,
           items: lines.map((line) => ({ slug: line.product.slug, qty: line.qty })),
+          discountCode: discount?.code ?? "",
         });
 
         if (!result.ok) {
@@ -101,6 +108,8 @@ export function Checkout() {
         submitted.current = true;
         saveLastOrder({ orderNumber: result.orderNumber, total: result.total });
         clear();
+        // Kod važi za jednu kupovinu.
+        setDiscount(null);
         router.push("/porudzbina/hvala");
       } catch {
         setFormMessage(
@@ -134,7 +143,7 @@ export function Checkout() {
   }
 
   return (
-    <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(380px,100%),1fr))] items-start gap-x-[72px] gap-y-[48px] px-[32px] pt-[56px] pb-[96px]">
+    <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(380px,100%),1fr))] items-start gap-x-[72px] gap-y-[48px] px-[16px] md:px-[32px] pt-[56px] pb-[96px]">
       <form noValidate onSubmit={onSubmit} className="flex flex-col gap-[44px]">
         <div className="flex flex-col gap-[10px]">
           <div className="text-[12px] tracking-[0.2em] text-brass uppercase">Porudžbina</div>
@@ -189,7 +198,8 @@ export function Checkout() {
             </div>
           </div>
           <p className={hintClass}>
-            Na ovaj broj vas zovemo da potvrdimo porudžbinu, a kurir da najavi dostavu. Na email stiže potvrda porudžbine.
+            Na ovaj broj vas zovemo da potvrdimo porudžbinu, a kurir da najavi dostavu. Na email
+            stiže potvrda porudžbine.
           </p>
         </div>
 
@@ -320,19 +330,28 @@ export function Checkout() {
                 </div>
               </div>
               <div className="text-[15px] whitespace-nowrap">
-                {formatPrice(product.price === null ? null : product.price * qty)}
+                {formatPrice(
+                  currentPrice(product) === null ? null : (currentPrice(product) as number) * qty,
+                )}
               </div>
             </div>
           ))}
         </div>
+        <DiscountField />
         <div className="flex flex-col gap-[8px] text-[16px]">
           <div className="flex justify-between">
             <span className="text-muted">Međuzbir</span>
             <span>{formatPrice(subtotal, "[IZNOS]")}</span>
           </div>
+          {pricing.discount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-muted">Popust {discount?.percent}%</span>
+              <span>−{formatPrice(pricing.discount)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-muted">Dostava</span>
-            <span>{formatPrice(delivery, "[CENA DOSTAVE]")}</span>
+            <span>{delivery === 0 ? "Besplatna" : formatPrice(delivery, "[CENA DOSTAVE]")}</span>
           </div>
         </div>
         <div className="flex items-baseline justify-between border-t border-ink pt-[20px]">

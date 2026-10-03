@@ -7,6 +7,8 @@ type QuantityStepperProps = {
   onChange: (value: number) => void;
   /** lg: stranica proizvoda · sm: stavka u korpi */
   size?: "lg" | "sm";
+  /** Najveća količina; manja je od opšteg ograničenja kada je na stanju manje komada. */
+  max?: number;
 };
 
 const sizes = {
@@ -14,7 +16,12 @@ const sizes = {
   sm: { button: "h-[44px] w-[44px] text-[18px]", value: "min-w-[28px]" },
 };
 
-export function QuantityStepper({ value, onChange, size = "lg" }: QuantityStepperProps) {
+export function QuantityStepper({
+  value,
+  onChange,
+  size = "lg",
+  max = MAX_QTY,
+}: QuantityStepperProps) {
   const styles = sizes[size];
 
   return (
@@ -33,8 +40,9 @@ export function QuantityStepper({ value, onChange, size = "lg" }: QuantitySteppe
       <button
         type="button"
         aria-label="Povećaj količinu"
-        onClick={() => onChange(Math.min(value + 1, MAX_QTY))}
-        className={`cursor-pointer ${styles.button}`}
+        onClick={() => onChange(Math.min(value + 1, max))}
+        disabled={value >= max}
+        className={`cursor-pointer disabled:cursor-default disabled:text-line-strong ${styles.button}`}
       >
         +
       </button>

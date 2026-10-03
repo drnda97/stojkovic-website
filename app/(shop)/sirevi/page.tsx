@@ -12,7 +12,7 @@ export default async function CollectionPage() {
   const [products, filters] = await Promise.all([getProducts(), getFilters()]);
 
   return (
-    <section className="mx-auto box-content max-w-site px-[32px] pt-[72px] pb-[96px]">
+    <section className="mx-auto box-content max-w-site px-[16px] md:px-[32px] pt-[72px] pb-[96px]">
       <div className="flex max-w-[640px] flex-col gap-[14px]">
         <div className="text-[12px] tracking-[0.2em] text-brass uppercase">Prodavnica</div>
         <h1 className="text-[length:clamp(44px,5.5vw,72px)] leading-[1.05]">Naši sirevi</h1>

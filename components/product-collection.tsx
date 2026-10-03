@@ -11,7 +11,10 @@ type ProductCollectionProps = { products: Product[]; filters: Filter[] };
 
 export function ProductCollection({ products, filters }: ProductCollectionProps) {
   const [filter, setFilter] = useState(ALL);
-  const buttons = [{ value: ALL, label: "Svi" }, ...filters.map(({ id, label }) => ({ value: id, label }))];
+  const buttons = [
+    { value: ALL, label: "Svi" },
+    ...filters.map(({ id, label }) => ({ value: id, label })),
+  ];
   const visible = filter === ALL ? products : products.filter((p) => p.category === filter);
 
   return (

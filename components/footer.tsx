@@ -11,7 +11,7 @@ export async function Footer() {
 
   return (
     <footer className="bg-ink text-paper">
-      <div className="mx-auto box-content flex max-w-site flex-col gap-[56px] px-[32px] pt-[72px] pb-[32px]">
+      <div className="mx-auto box-content flex max-w-site flex-col gap-[56px] px-[16px] md:px-[32px] pt-[72px] pb-[32px]">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-x-[48px] gap-y-[40px]">
           <div className="flex flex-col gap-[12px]">
             <div className="font-serif text-[28px] font-medium tracking-[0.12em] uppercase">

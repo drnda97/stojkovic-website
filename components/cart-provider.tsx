@@ -9,8 +9,9 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import type { AppliedDiscount } from "@/data/discounts";
 import type { Product } from "@/data/products";
-import { countPieces, toLines, type CartLine } from "@/lib/cart";
+import { countPieces, getPricing, toLines, type CartLine, type Pricing } from "@/lib/cart";
 import {
   addItem,
   clearItems,
@@ -20,10 +21,24 @@ import {
   setItemQty,
   subscribe,
 } from "@/lib/cart-store";
+import {
+  getDiscountServerSnapshot,
+  getDiscountSnapshot,
+  setDiscount,
+  subscribeDiscount,
+} from "@/lib/discount-store";
 
 type CartContextValue = {
   lines: CartLine[];
   count: number;
+  /** Međuzbir, popust, dostava i ukupno za trenutnu korpu. */
+  pricing: Pricing;
+  /** Kod za popust koji je kupac upisao; null ako ga nema. */
+  discount: AppliedDiscount | null;
+  /** `null` uklanja kod. */
+  setDiscount: (discount: AppliedDiscount | null) => void;
+  /** Vrednost od koje je dostava besplatna; null kada je besplatna dostava isključena. */
+  freeShippingFrom: number | null;
   /** false na serveru i tokom hidratacije, dok se korpa ne pročita iz localStorage. */
   hydrated: boolean;
   isOpen: boolean;
@@ -43,15 +58,22 @@ const noopSubscribe = () => () => {};
 type CartProviderProps = {
   /** Proizvodi sa servera — korpa iz njih čita nazive, cene i slike. */
   products: Product[];
+  /** Iz podešavanja u admin panelu; null kada je besplatna dostava isključena. */
+  freeShippingFrom: number | null;
   children: ReactNode;
 };
 
-export function CartProvider({ products, children }: CartProviderProps) {
+export function CartProvider({ products, freeShippingFrom, children }: CartProviderProps) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const hydrated = useSyncExternalStore(
     noopSubscribe,
     () => true,
     () => false,
+  );
+  const discount = useSyncExternalStore(
+    subscribeDiscount,
+    getDiscountSnapshot,
+    getDiscountServerSnapshot,
   );
   const [isOpen, setIsOpen] = useState(false);
 
@@ -67,6 +89,10 @@ export function CartProvider({ products, children }: CartProviderProps) {
     return {
       lines,
       count: countPieces(lines),
+      pricing: getPricing(lines, { discountPercent: discount?.percent, freeShippingFrom }),
+      discount,
+      setDiscount,
+      freeShippingFrom,
       hydrated,
       isOpen,
       openCart,
@@ -76,7 +102,7 @@ export function CartProvider({ products, children }: CartProviderProps) {
       remove: removeItem,
       clear: clearItems,
     };
-  }, [items, products, hydrated, isOpen, openCart, closeCart, add]);
+  }, [items, products, discount, freeShippingFrom, hydrated, isOpen, openCart, closeCart, add]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

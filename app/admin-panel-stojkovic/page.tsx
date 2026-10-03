@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isAvailable } from "@/data/products";
 import { ADMIN_PATH, isAdmin } from "@/lib/admin-auth";
 import { getProducts, getSettings } from "@/lib/content";
 import { formatPieces, formatPrice } from "@/lib/format";
@@ -65,6 +66,15 @@ export default async function DashboardPage() {
   );
   const withoutPrice = products.filter((product) => product.price === null);
   const withoutImage = products.filter((product) => !product.image);
+  const soldOut = products.filter((product) => !isAvailable(product));
+  // Pri kraju: proizvodi kojima se vodi broj i koji su pali na svoj prag.
+  const runningLow = products.filter(
+    (product) =>
+      isAvailable(product) &&
+      product.stockQty != null &&
+      product.lowStockThreshold != null &&
+      product.stockQty <= product.lowStockThreshold,
+  );
   const recent = orders.slice(-5).reverse();
 
   const attention = [
@@ -82,6 +92,14 @@ export default async function DashboardPage() {
     },
     withoutPrice.length > 0 && {
       text: `Bez upisane cene: ${withoutPrice.length} (${withoutPrice.map((product) => product.name).join(", ")})`,
+      href: `${ADMIN_PATH}/proizvodi`,
+    },
+    soldOut.length > 0 && {
+      text: `Nema na stanju: ${soldOut.map((product) => product.name).join(", ")}`,
+      href: `${ADMIN_PATH}/proizvodi`,
+    },
+    runningLow.length > 0 && {
+      text: `Pri kraju: ${runningLow.map((product) => `${product.name} (${product.stockQty} kom.)`).join(", ")}`,
       href: `${ADMIN_PATH}/proizvodi`,
     },
     withoutImage.length > 0 && {

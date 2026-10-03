@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AccordionItem } from "@/components/accordion";
 import { site } from "@/data/site";
+import { getFreeShippingFrom } from "@/lib/content";
 import { formatPrice } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
   description:
     "Sve o poručivanju, dostavi i samom siru: kako se plaća, gde i kada šaljemo, koliko sir traje i šta je u njemu.",
 };
+
+const DELIVERY_QUESTION = "Koliko košta dostava?";
 
 const questions = [
   {
@@ -20,8 +23,8 @@ const questions = [
     answer: `Šaljemo kurirskom službom na teritoriji cele Srbije. Pakete predajemo ${site.shippingDays}, da sir ne bi čekao vikend u magacinu. Isporuka obično traje ${site.deliveryTime} radna dana.`,
   },
   {
-    question: "Koliko košta dostava?",
-    answer: `Dostava je ${formatPrice(site.deliveryPrice, "[CENA DOSTAVE]")}. Za porudžbine preko ${formatPrice(site.freeDeliveryFrom, "[IZNOS]")} dostava je besplatna.`,
+    question: DELIVERY_QUESTION,
+    answer: `Dostava je ${formatPrice(site.deliveryPrice, "[CENA DOSTAVE]")}.`,
   },
   {
     question: "Kako sir stiže, da li ostaje svež?",
@@ -54,9 +57,20 @@ const questions = [
   },
 ];
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  // Besplatna dostava se uključuje u admin panelu; pominje se samo dok je uključena.
+  const freeFrom = await getFreeShippingFrom();
+  const answers = questions.map((item) =>
+    item.question === DELIVERY_QUESTION && freeFrom !== null
+      ? {
+          ...item,
+          answer: `${item.answer} Za porudžbine od ${formatPrice(freeFrom)} dostava je besplatna.`,
+        }
+      : item,
+  );
+
   return (
-    <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] items-start gap-x-[80px] gap-y-[48px] px-[32px] pt-[72px] pb-[96px]">
+    <section className="mx-auto box-content grid max-w-site grid-cols-[repeat(auto-fit,minmax(min(340px,100%),1fr))] items-start gap-x-[80px] gap-y-[48px] px-[16px] md:px-[32px] pt-[72px] pb-[96px]">
       <div className="flex flex-col gap-[16px]">
         <div className="text-[12px] tracking-[0.2em] text-brass uppercase">Pomoć</div>
         <h1 className="text-[length:clamp(44px,5.5vw,72px)] leading-[1.05]">Česta pitanja</h1>
@@ -73,7 +87,7 @@ export default function FaqPage() {
       </div>
 
       <div className="border-t border-ink">
-        {questions.map((item, index) => (
+        {answers.map((item, index) => (
           <AccordionItem
             key={item.question}
             title={item.question}
