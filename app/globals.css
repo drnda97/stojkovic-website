@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Tokeni iz design-reference/ — boje, fontovi i širina kontejnera. */
+@theme {
+  --color-paper: #f6f1e7;
+  --color-band: #efe8da;
+  --color-field: #fbf8f1;
+  --color-ph: #e7dfcf;
+  --color-ph-dark: #e1d8c5;
+
+  --color-ink: #1e1b16;
+  --color-muted: #5f5849;
+
+  --color-brass: #7a5c25;
+  --color-brass-light: #d9bf8a;
+
+  --color-line: #ddd4c2;
+  --color-line-mid: #cfc4ae;
+  --color-line-strong: #bdb29c;
+  --color-line-dark: #3a352c;
+  --color-footer-text: #cfc6b4;
+
+  --font-serif: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-jost), system-ui, sans-serif;
+
+  --container-site: 1200px;
+
+  --animate-drawer-in: drawer-in 220ms ease-out;
+  --animate-fade-in: fade-in 220ms ease-out;
+
+  @keyframes drawer-in {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+  }
+
+  a:hover {
+    color: var(--color-brass);
+  }
+
+  /* Fokus sa tastature u istom stilu kao polja forme u referenci (.in:focus). */
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 1px;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+    }
+  }
+}

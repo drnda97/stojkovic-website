@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<title>Kozji sir sa alevom paprikom — Gazdinstvo Stojković</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F6F1E7}
+a{color:inherit;text-decoration:none}a:hover{color:#7A5C25}
+h1,h2,h3,.serif{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;margin:0}
+p{margin:0}
+.ph{background:#E7DFCF;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#5F5849}
+.eyebrow{font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#7A5C25}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 32px;background:#1E1B16;color:#F6F1E7;font:inherit;font-size:14px;letter-spacing:0.14em;text-transform:uppercase;border:0;cursor:pointer}
+.btn:hover{background:#7A5C25}
+.step{width:48px;height:56px;border:0;background:transparent;font:inherit;font-size:20px;color:#1E1B16;cursor:pointer}
+details{border-bottom:1px solid #DDD4C2}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:60px;font-size:16px;letter-spacing:0.04em}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:22px;color:#7A5C25}
+details[open] summary::after{content:"–"}
+.ft a:hover{color:#D9BF8A}
+</style>
+</helmet>
+<div style="font-family: 'Jost', system-ui, sans-serif; color: #1E1B16; font-size: 17px; line-height: 1.65; background: #F6F1E7">
+
+<div style="background: #1E1B16; color: #F6F1E7; text-align: center; font-size: 13px; letter-spacing: 0.08em; padding: 10px 16px">Plaćanje pouzećem · Dostava širom Srbije</div>
+<header style="border-bottom: 1px solid #DDD4C2">
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<a href="Main.dc.html" style="display: flex; flex-direction: column; line-height: 1.1">
+<span style="font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: #5F5849">Poljoprivredno gazdinstvo</span>
+<span class="serif" style="font-size: 28px; letter-spacing: 0.12em; text-transform: uppercase">Stojković</span>
+</a>
+<nav style="display: flex; flex-wrap: wrap; gap: 8px 36px; font-size: 15px; letter-spacing: 0.04em">
+<a href="Kolekcija.dc.html" style="padding: 10px 0">Sirevi</a>
+<a href="O-nama.dc.html" style="padding: 10px 0">O nama</a>
+<a href="Pitanja.dc.html" style="padding: 10px 0">Česta pitanja</a>
+</nav>
+<button type="button" onClick="{{openCart}}" style="font: inherit; font-size: 15px; letter-spacing: 0.04em; padding: 10px 0; min-height: 44px; background: transparent; border: 0; color: inherit; cursor: pointer">Korpa ({{cart}})</button>
+</div>
+</header>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 28px 32px 0; display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; color: #5F5849">
+<a href="Main.dc.html">Početna</a><span>/</span><a href="Kolekcija.dc.html">Sirevi</a><span>/</span><span style="color: #1E1B16">Sa alevom paprikom</span>
+</div>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 32px 32px 96px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 64px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div class="ph" style="aspect-ratio: 1 / 1">Fotografija · sir sa alevom paprikom, presek</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<div class="ph" style="aspect-ratio: 1 / 1; padding: 8px">Odozgo</div>
+<div class="ph" style="aspect-ratio: 1 / 1; padding: 8px">Pakovanje</div>
+<div class="ph" style="aspect-ratio: 1 / 1; padding: 8px">Na tanjiru</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div class="eyebrow">Kozji sir sa ukusom</div>
+<h1 style="font-size: clamp(40px, 4.5vw, 60px); line-height: 1.05; text-wrap: balance">Kozji sir sa alevom paprikom</h1>
+<div style="font-size: 22px">[CENA] RSD <span style="font-size: 15px; color: #5F5849">· [GRAMAŽA] g, vakuumirano</span></div>
+</div>
+<p style="color: #5F5849">Polutvrdi beli kozji sir uvaljan u slatku alevu papriku. Paprika mu daje toplu boju i blag, pomalo dimljen ton koji lepo ide uz kremastu, blago kiselkastu sredinu.</p>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<div style="display: flex; align-items: center; border: 1px solid #BDB29C">
+<button type="button" class="step" aria-label="Smanji količinu" onClick="{{dec}}">−</button>
+<div style="min-width: 36px; text-align: center; font-size: 17px" aria-live="polite">{{qty}}</div>
+<button type="button" class="step" aria-label="Povećaj količinu" onClick="{{inc}}">+</button>
+</div>
+<button type="button" class="btn" style="flex-grow: 1" onClick="{{add}}">Dodaj u korpu</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #5F5849; padding: 20px 0; border-top: 1px solid #DDD4C2">
+<div>Plaćanje pouzećem — gotovinom kuriru pri preuzimanju.</div>
+<div>Isporuka za [ROK] radna dana, u rashladnom pakovanju.</div>
+</div>
+
+<div style="border-top: 1px solid #DDD4C2">
+<details open>
+<summary>Opis</summary>
+<p style="font-size: 16px; color: #5F5849; padding-bottom: 20px">Sir se pravi od svežeg kozjeg mleka sa našeg imanja. Posle sirenja i ceđenja odleži [ZRENJE] dana, a zatim se ručno uvalja u mlevenu papriku. Tekstura je čvrsta ali meka pod nožem — seče se na kriške i ne mrvi se.</p>
+</details>
+<details>
+<summary>Sastojci</summary>
+<p style="font-size: 16px; color: #5F5849; padding-bottom: 20px">Kozje mleko, sirilo, so, aleva paprika. Bez konzervansa, boja i veštačkih aroma. Alergeni: mleko.</p>
+</details>
+<details>
+<summary>Čuvanje</summary>
+<p style="font-size: 16px; color: #5F5849; padding-bottom: 20px">U frižideru, na 2–6 °C. Neotvoreno pakovanje traje do datuma na etiketi. Posle otvaranja umotajte u papir za pečenje ili stavite u zatvorenu posudu i potrošite za [BROJ] dana.</p>
+</details>
+<details>
+<summary>Dostava i plaćanje</summary>
+<p style="font-size: 16px; color: #5F5849; padding-bottom: 20px">Šaljemo [DANI SLANJA] kurirskom službom, da paket ne bi čekao vikend u magacinu. Cena dostave: [CENA DOSTAVE] RSD. Plaćate pouzećem.</p>
+</details>
+</div>
+</div>
+</section>
+
+<section style="background: #EFE8DA">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 40px 64px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div class="eyebrow">Na stolu</div>
+<h2 style="font-size: clamp(32px, 3.6vw, 46px); line-height: 1.1">Uz šta ga služiti</h2>
+</div>
+<div style="display: flex; flex-direction: column; font-size: 16px">
+<div style="padding: 16px 0; border-top: 1px solid #1E1B16"><span class="serif" style="font-size: 22px">Za meze</span><br><span style="color: #5F5849">Na dasci, uz pršutu, orahe i tople lepinje.</span></div>
+<div style="padding: 16px 0; border-top: 1px solid #CFC4AE"><span class="serif" style="font-size: 22px">U salati</span><br><span style="color: #5F5849">Kockice preko paradajza, pečene paprike i maslinovog ulja.</span></div>
+<div style="padding: 16px 0; border-top: 1px solid #CFC4AE"><span class="serif" style="font-size: 22px">Uz čašu</span><br><span style="color: #5F5849">Suvo belo vino ili lagano crveno; domaća rakija pre jela.</span></div>
+</div>
+</div>
+</section>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 96px 32px">
+<h2 style="font-size: clamp(32px, 3.6vw, 46px); line-height: 1.1; margin-bottom: 40px">Probajte i ove</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 48px 24px">
+<a href="Proizvod.dc.html" style="display: flex; flex-direction: column; gap: 14px">
+<div class="ph" style="aspect-ratio: 4 / 5">Fotografija · klasičan kozji sir</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div class="serif" style="font-size: 25px; line-height: 1.2">Klasičan kozji sir</div>
+<div style="font-size: 15px">[CENA] RSD</div>
+</div>
+</a>
+<a href="Proizvod.dc.html" style="display: flex; flex-direction: column; gap: 14px">
+<div class="ph" style="aspect-ratio: 4 / 5">Fotografija · sir sa maslinama</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div class="serif" style="font-size: 25px; line-height: 1.2">Sa maslinama</div>
+<div style="font-size: 15px">[CENA] RSD</div>
+</div>
+</a>
+<a href="Proizvod.dc.html" style="display: flex; flex-direction: column; gap: 14px">
+<div class="ph" style="aspect-ratio: 4 / 5">Fotografija · sir sa začinskim biljem</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div class="serif" style="font-size: 25px; line-height: 1.2">Sa začinskim biljem</div>
+<div style="font-size: 15px">[CENA] RSD</div>
+</div>
+</a>
+<a href="Proizvod.dc.html" style="display: flex; flex-direction: column; gap: 14px">
+<div class="ph" style="aspect-ratio: 4 / 5">Fotografija · degustacioni paket</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div class="serif" style="font-size: 25px; line-height: 1.2">Degustacioni paket</div>
+<div style="font-size: 15px">[CENA] RSD</div>
+</div>
+</a>
+</div>
+</section>
+
+<footer class="ft" style="background: #1E1B16; color: #F6F1E7">
+<div style="max-width: 1200px; margin: 0 auto; padding: 72px 32px 32px; display: flex; flex-direction: column; gap: 56px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 40px 48px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div class="serif" style="font-size: 28px; letter-spacing: 0.12em; text-transform: uppercase">Stojković</div>
+<p style="font-size: 15px; color: #CFC6B4">Poljoprivredno gazdinstvo. Domaći kozji sirevi sa začinima, ručna proizvodnja.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; font-size: 15px">
+<div style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #D9BF8A; margin-bottom: 8px">Prodavnica</div>
+<a href="Kolekcija.dc.html" style="padding: 6px 0">Svi sirevi</a>
+<a href="O-nama.dc.html" style="padding: 6px 0">O nama</a>
+<a href="Pitanja.dc.html" style="padding: 6px 0">Česta pitanja</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; font-size: 15px">
+<div style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #D9BF8A; margin-bottom: 8px">Kontakt</div>
+<div style="padding: 6px 0">[TELEFON]</div>
+<div style="padding: 6px 0">[EMAIL]</div>
+<a href="https://www.instagram.com/pg.stojkovic2023" style="padding: 6px 0">Instagram · @pg.stojkovic2023</a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; font-size: 15px">
+<div style="font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #D9BF8A; margin-bottom: 8px">Dostava</div>
+<p style="color: #CFC6B4; padding: 6px 0">Šaljemo kurirskom službom širom Srbije. Plaćanje pouzećem.</p>
+</div>
+</div>
+<div style="border-top: 1px solid #3A352C; padding-top: 24px; font-size: 13px; color: #CFC6B4">© 2026 Poljoprivredno gazdinstvo Stojković · [MESTO]</div>
+</div>
+</footer>
+
+<sc-if value="{{cartOpen}}" hint-placeholder-val="{{false}}">
+<div style="position: fixed; inset: 0; z-index: 50; display: flex; justify-content: flex-end">
+<button type="button" aria-label="Zatvori korpu" onClick="{{closeCart}}" style="position: absolute; inset: 0; background: rgba(30, 27, 22, 0.45); border: 0; cursor: pointer"></button>
+<aside role="dialog" aria-label="Korpa" style="position: relative; width: min(460px, 100%); height: 100%; overflow: auto; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 24px; background: #F6F1E7; font-size: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h2 style="font-size: 34px">Korpa</h2>
+<button type="button" aria-label="Zatvori korpu" onClick="{{closeCart}}" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 26px; color: #1E1B16; cursor: pointer">×</button>
+</div>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; gap: 16px; padding: 20px 0; border-top: 1px solid #DDD4C2; border-bottom: 1px solid #DDD4C2">
+<div class="ph" style="width: 88px; height: 110px; padding: 4px; font-size: 10px; flex-shrink: 0">Foto</div>
+<div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+<div class="serif" style="font-size: 22px; line-height: 1.2">Kozji sir sa alevom paprikom</div>
+<div style="font-size: 14px; color: #5F5849">[GRAMAŽA] g · [CENA] RSD</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; border: 1px solid #BDB29C">
+<button type="button" aria-label="Smanji količinu" onClick="{{cDec}}" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 18px; cursor: pointer">−</button>
+<div style="min-width: 28px; text-align: center" aria-live="polite">{{cart}}</div>
+<button type="button" aria-label="Povećaj količinu" onClick="{{cInc}}" style="width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 18px; cursor: pointer">+</button>
+</div>
+<button type="button" onClick="{{clear}}" style="min-height: 44px; border: 0; background: transparent; font: inherit; font-size: 14px; color: #5F5849; text-decoration: underline; cursor: pointer">Ukloni</button>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 18px"><span>Međuzbir</span><span>[IZNOS] RSD</span></div>
+<div style="font-size: 14px; color: #5F5849">Dostava se obračunava u sledećem koraku. Plaćanje pouzećem.</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<a href="Checkout.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 56px; background: #1E1B16; color: #F6F1E7; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase">Nastavi na porudžbinu</a>
+<button type="button" onClick="{{closeCart}}" style="min-height: 48px; border: 0; background: transparent; font: inherit; font-size: 15px; color: #1E1B16; text-decoration: underline; cursor: pointer">Nastavi kupovinu</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 20px; padding-top: 24px; border-top: 1px solid #DDD4C2">
+<p style="color: #5F5849">Korpa je prazna.</p>
+<a href="Kolekcija.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 56px; background: #1E1B16; color: #F6F1E7; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase">Pogledaj sireve</a>
+</div>
+</sc-if>
+</aside>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2600}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { qty: 1, cart: 0 };
+}
+renderVals() {
+const s = this.state || {};
+const qty = s.qty ?? 1;
+const cart = s.cart ?? 0;
+return {
+qty: qty,
+cart: cart,
+inc: () => this.setState({ qty: Math.min(qty + 1, 20) }),
+dec: () => this.setState({ qty: Math.max(qty - 1, 1) }),
+add: () => this.setState({ cart: Math.min(cart + qty, 20), cartOpen: true }),
+cartOpen: !!s.cartOpen,
+hasItems: cart > 0,
+isEmpty: cart === 0,
+openCart: () => this.setState({ cartOpen: true }),
+closeCart: () => this.setState({ cartOpen: false }),
+cInc: () => this.setState({ cart: Math.min(cart + 1, 20) }),
+cDec: () => this.setState({ cart: Math.max(cart - 1, 1) }),
+clear: () => this.setState({ cart: 0 })
+};
+}
+}
+</script>
+</body>
+</html>
