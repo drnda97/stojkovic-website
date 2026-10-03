@@ -3,7 +3,7 @@ import { defaultFilters, FEATURED_COLLECTION_ID, products as seedProducts } from
 
 /**
  * Veza sa MySQL bazom. Podaci za pristup su u okruženju (.env.local):
- * DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.
+ * DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, i po potrebi DB_SSL ili DB_SSL_CA.
  *
  * Tabele se prave same pri prvom povezivanju, a prazna baza se puni početnim
  * proizvodima iz data/products.ts — na hostingu je dovoljno napraviti praznu
@@ -272,7 +272,7 @@ const globalForDb = globalThis as unknown as { stojkovicDb?: Promise<Pool> };
 /** Skup veza ka bazi; pri prvom pozivu pravi tabele i početni sadržaj. */
 export function getDb(): Promise<Pool> {
   if (!globalForDb.stojkovicDb) {
-    const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+    const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSL, DB_SSL_CA } = process.env;
     if (!DB_HOST || !DB_USER || !DB_NAME) {
       throw new Error(
         "Baza nije podešena: upišite DB_HOST, DB_USER, DB_PASSWORD i DB_NAME u .env.local.",
@@ -285,6 +285,9 @@ export function getDb(): Promise<Pool> {
       password: DB_PASSWORD,
       database: DB_NAME,
       charset: "utf8mb4",
+      // Baze u oblaku traže šifrovanu vezu. DB_SSL_CA je sertifikat provajdera (ceo PEM tekst);
+      // DB_SSL=true je dovoljno kada provajder koristi javno priznat sertifikat.
+      ssl: DB_SSL_CA ? { ca: DB_SSL_CA.replace(/\\n/g, "\n") } : DB_SSL === "true" ? {} : undefined,
       // Vreme se čuva i čita kao UTC, nezavisno od podešavanja servera.
       timezone: "Z",
       connectionLimit: 5,

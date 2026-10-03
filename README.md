@@ -52,6 +52,8 @@ DB_PASSWORD=root
 DB_NAME=stojkovic
 ```
 
+Baze u oblaku obično traže šifrovanu vezu: tada se dodaje `DB_SSL_CA` (ceo tekst CA sertifikata provajdera) ili, ako provajder koristi javno priznat sertifikat, `DB_SSL=true`.
+
 Tabele se prave same pri prvom pokretanju, a prazna baza se puni početnim proizvodima iz `data/products.ts` (`lib/db.ts`). Na hostingu je dovoljno napraviti praznu bazu i upisati njene podatke u okruženje. Posle prvog punjenja proizvodi se menjaju u panelu, a izmene u `data/products.ts` više nemaju efekta.
 
 Na disku ostaju samo fajlovi ubačenih slika, u `storage/uploads/` (nije u git-u; folder se može premestiti promenljivom `UPLOADS_DIR`). Taj folder treba sačuvati pri deploy-u.
